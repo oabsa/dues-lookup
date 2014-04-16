@@ -82,7 +82,7 @@ function oadueslookup_install() {
     // only if it doesn't exist yet. If the columns or indexes need to
     // change it'll need update code (see below).
 
-    $sql = "CREATE TABLE ${dbprefix}episode (
+    $sql = "CREATE TABLE ${dbprefix}dues_data (
   bsaid            MEDIUMINT(10) NOT NULL,
   max_dues_year    VARCHAR(4),
   dues_paid_date   DATE,
@@ -124,8 +124,96 @@ function oadueslookup_install() {
 }
 
 function oadueslookup_user_page( &$wp ) {
-    $content = "This is a placeholder for the dues page.";
-    return $content;
+    global $wpdb;
+    $dbprefix = $wpdb->prefix . "oalm_";
+
+    ob_start();
+?>
+<style type="text/css"><!--
+.oalm_dues_table {
+  border: 1px solid black;
+  border-collapse: collapse;
+}
+.oalm_dues_table tr td {
+  border: 1px solid black;
+  padding: 5px;
+}
+.oalm_dues_table tr td.oalm_value {
+  text-align: center;
+  vertical-align: middle;
+  padding: 5px;
+}
+.oalm_dues_table tr td.oalm_desc {
+  text-align: center;
+  vertical-align: top;
+  padding: 5px;
+}
+.oalm_dues_table tr th {
+  border: 1px solid black;
+  text-align: right;
+  padding: 5px;
+}
+.oalm_dues_good {
+  color: green;
+}
+.oalm_dues_bad {
+  color: red;
+}
+--></style>
+<?php
+    if ( isset($_POST['bsaid']) ) {
+        $bsaid = $_POST['bsaid'];
+        if (preg_match('/^\d+$/', $bsaid)) {
+            $results = $wpdb->get_row($wpdb->prepare("SELECT max_dues_year, dues_paid_date, level, reg_audit_result FROM ${dbprefix}dues_data WHERE bsaid = %d", array($bsaid)));
+            if (!isset($results)) {
+?>
+<div class="oalm_dues_bad"><p>Your BSA Member ID <?php echo htmlspecialchars($bsaid) ?> was not found.</p></div>
+<p>This can mean any of the following:</p>
+<ul>
+<li>You mistyped your ID</li>
+<li>You are not a member of the lodge.</li>
+<li>You have never paid dues.</li>
+<li>(most likely) We don't have your BSA Member ID on your record or have the incorrect ID on your record.</li>
+</ul>
+<br><br><br>
+<?php
+            } else {
+                $max_dues_year = $results->max_dues_year;
+                $dues_paid_date = $results->dues_paid_date;
+                $level = $results->level;
+                $reg_audit_result = $results->reg_audit_result;
+?>
+<table class="oalm_dues_table">
+<tr><th>BSA Member ID</th><td class="oalm_value"><?php echo htmlspecialchars($bsaid) ?></td><td class="oalm_desc"></td></tr>
+<tr><th>Dues Paid Thru</th><td class="oalm_value">12/31/<?php echo htmlspecialchars($max_dues_year) ?></td><td class="oalm_desc"><?php
+                $thedate = getdate();
+                if ($max_dues_year >= $thedate['year']) {
+?><span class="oalm_dues_good">Your dues are current.</span><?php
+                } else {
+?><span class="oalm_dues_bad">Your dues are not current.</span><br><a href="http://www.michiganscouting.org/Event.aspx?id=11755">Pay your dues online.</a><?php
+                }
+?></td></tr>
+<tr><th>Your current honor/level</th><td class="oalm_value"><?php echo htmlspecialchars($level) ?></td><td class="oalm_desc"></td></tr>
+<tr><th>BSA Membership Status</th><td class="oalm_value"><?php echo htmlspecialchars($reg_audit_result) ?></td><td class="oalm_desc"></td></tr>
+</table>
+<?php
+            }
+        } else {
+?>
+<div class="oalm_dues_bad"><p>Invalid BSA Member ID entered, please try again.</p></div>
+<?php
+        }
+?>
+<?php
+    }
+?>
+<p>Enter your BSA Member ID to check your current dues status.</p>
+<form method="POST" action="">
+<label for="bsaid">BSA Member ID:</label> <input id="bsaid" name="bsaid" type="text" size="9">
+<input type="submit" value="Go">
+</form>
+<?php
+    return ob_get_clean();
 }
 
 function oadueslookup_url_handler( &$wp ) {

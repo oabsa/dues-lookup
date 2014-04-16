@@ -404,6 +404,24 @@ function oadueslookup_options() {
     // form processing code here
     // =========================
 
+if (isset($_FILES['oalm_file'])) {
+    echo "<h3>I got a file upload!</h3>";
+    echo "<b>Name:</b> " . $_FILES['oalm_file']['name'] . "<br>";
+    echo "<b>Type:</b> " . $_FILES['oalm_file']['type'] . "<br>";
+
+/** PHPExcel */
+include plugin_dir_path( __FILE__ ) . 'PHPExcel-1.8.0/Classes/PHPExcel.php';
+
+/** PHPExcel_Writer_Excel2007 */
+include plugin_dir_path( __FILE__ ) . 'PHPExcel-1.8.0/Classes/PHPExcel/Writer/Excel2007.php';
+
+    $objReader = new PHPExcel_Reader_Excel2007();
+    $objReader->setReadDataOnly(true);
+    $objReader->setLoadSheetsOnly( array("Sheet") );
+    $objPHPExcel = $objReader->load($_FILES["oalm_file"]["tmp_name"]);
+    $cellValue = $objPHPExcel->getActiveSheet()->getCell('A1')->getValue();
+    echo "<b>Cell A1 contains:</b> " . htmlspecialchars($cellValue) . "<br>";
+}
 
     // ============================
     // screens and forms start here
@@ -421,7 +439,13 @@ function oadueslookup_options() {
 
     // settings form
 
-    echo "<p>This is a settings page placeholder.</p>";
+?>
+<form action="" method="post" enctype="multipart/form-data">
+<label for="oalm_file">Upload a new OALM Export file (xlsx):</label>
+<input type="file" name="oalm_file" id="oalm_file" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+<input type="submit" name="submit" value="Upload">
+</form>
+<?php
 
     echo "</div>";
 } // END OF SETTINGS SCREEN

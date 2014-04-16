@@ -17,6 +17,9 @@ Makes use of data exported from OA LodgeMaster, which needs to be periodically i
 See the Github page for detailed instructions and to file bug reports.  
 https://github.com/justdave/oadueslookup/wiki
 
+This plugin embeds the PHPExcel library intact with no modifications, which is licensed LGPL and not included under the MIT license.  PHPExcel can be found at
+https://github.com/PHPOffice/PHPExcel
+
 == Installation ==  
 
 1. Place the unpacked "osdueslookup" directory in the "/wp-content/plugins/" directory.

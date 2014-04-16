@@ -40,6 +40,10 @@ register_activation_hook( __FILE__, 'oadueslookup_install' );
 
 global $oadueslookup_db_version;
 $oadueslookup_db_version = 1;
+global $oadueslookup_slug;
+$oadueslookup_slug = 'dues';
+global $oadueslookup_dues_url;
+$oadueslookup_dues_url = "http://www.michiganscouting.org/Event.aspx?id=11755";
 
 function oadueslookup_create_table($ddl) {
     global $wpdb;
@@ -124,6 +128,7 @@ function oadueslookup_install() {
 }
 
 function oadueslookup_user_page( &$wp ) {
+    global $oadueslookup_dues_url;
     global $wpdb;
     $dbprefix = $wpdb->prefix . "oalm_";
 
@@ -175,29 +180,99 @@ function oadueslookup_user_page( &$wp ) {
 <li>You have never paid dues.</li>
 <li>(most likely) We don't have your BSA Member ID on your record or have the incorrect ID on your record.</li>
 </ul>
-<br><br><br>
+<p>You should fill out the "Update Contact Information Only" option on the <a href="<?php echo $oadueslookup_dues_url ?>">Dues Form</a> and make sure to supply your BSA Member ID on the form, then check back here in a week to see if your status has updated.  Feel free to contact <a href="mailto:recordkeeper@nslodge.org?subject=Dues+question">recordkeeper@nslodge.org</a> with any questions.</p>
 <?php
             } else {
                 $max_dues_year = $results->max_dues_year;
                 $dues_paid_date = $results->dues_paid_date;
                 $level = $results->level;
                 $reg_audit_result = $results->reg_audit_result;
+                if ($reg_audit_result == "") { $reg_audit_result = "Not Checked"; }
 ?>
 <table class="oalm_dues_table">
 <tr><th>BSA Member ID</th><td class="oalm_value"><?php echo htmlspecialchars($bsaid) ?></td><td class="oalm_desc"></td></tr>
-<tr><th>Dues Paid Thru</th><td class="oalm_value">12/31/<?php echo htmlspecialchars($max_dues_year) ?></td><td class="oalm_desc"><?php
+<tr><th>Dues Paid Thru</th><td class="oalm_value"><?php echo htmlspecialchars($max_dues_year) ?></td><td class="oalm_desc"><?php
                 $thedate = getdate();
                 if ($max_dues_year >= $thedate['year']) {
-?><span class="oalm_dues_good">Your dues are current.</span><?php
+                    ?><span class="oalm_dues_good">Your dues are current.</span><?php
+                    if (($reg_audit_result == "Not Registered") || ($reg_audit_result == "Not Found")) {
+                        ?><br><span class="oalm_dues_bad">However, your OA
+                        membership is not currently valid because we could not
+                        verify your BSA Membership status (see
+                        below)</span><?php
+                    }
                 } else {
-?><span class="oalm_dues_bad">Your dues are not current.</span><br><a href="http://www.michiganscouting.org/Event.aspx?id=11755">Pay your dues online.</a><?php
+                    ?><span class="oalm_dues_bad">Your dues are not current.</span><?php
+                    if (($reg_audit_result != "Not Registered") && ($reg_audit_result != "Not Found")) {
+                        ?><br><a href="<?php echo htmlspecialchars($oadueslookup_dues_url) ?>">Pay your dues online.</a><?php
+                    }
                 }
 ?></td></tr>
+<tr><th>Last Dues Payment</th><td class="oalm_value"><?php echo htmlspecialchars($dues_paid_date) ?></td><td class="oalm_desc"></td></tr>
 <tr><th>Your current honor/level</th><td class="oalm_value"><?php echo htmlspecialchars($level) ?></td><td class="oalm_desc"></td></tr>
-<tr><th>BSA Membership Status</th><td class="oalm_value"><?php echo htmlspecialchars($reg_audit_result) ?></td><td class="oalm_desc"></td></tr>
-</table>
-<?php
+<tr><th>BSA Membership Status</th><td class="oalm_value"><?php echo htmlspecialchars($reg_audit_result) ?></td><td class="oalm_desc"><?php
+                switch ($reg_audit_result) {
+                    case "Registered":
+                        ?><span class="oalm_dues_good">You are currently an
+                        active member of a Scouting unit.</span><br><?php
+                        if ($max_dues_year >= $thedate['year']) {
+                            ?>Your OA membership is thus valid.<?php
+                        } else {
+                            ?><span class="oalm_dues_bad">However, your OA
+                            membership is not current because your dues are not
+                            paid up. (see above)</span><?php
+                        }
+                        break;
+                    case "Not Registered":
+                        ?><span class="oalm_dues_bad">Your BSA registration has
+                        expired, which means you are no longer listed as a
+                        registered member of any Scouting unit, and also cannot
+                        be a member of the OA.</span><br>You will need to join
+                        a Scouting unit (troop, pack, crew, district, etc)
+                        before you may renew your OA Membership. If you
+                        <b>are</b> currently a member of a Scouting unit,
+                        please have your unit chairperson check to make sure
+                        your registration has been properly submitted to the
+                        council.<?php
+                        break;
+                    case "Not Found":
+                        ?><span class="oalm_dues_bad">Our most recent audit
+                        could not find you in the BSA database.</span><br>This
+                        almost always means the information we have on file for
+                        you does not match what is on your unit's official
+                        roster.  We must be able to verify your BSA membership
+                        before you can renew your OA membership.  Please check
+                        with your unit committee chairperson or advancement
+                        chairperson to verify how they have you listed on the
+                        unit roster.  The items which matter are:<ol><li>the
+                        spelling and spacing of your last name,</li><li>your
+                        birth date,</li><li>your gender, and</li><li>your BSA
+                        Member ID.</li></ol>Once you've verified this
+                        information, please submit it to us by using the
+                        "Update Contact Information" option on the <a
+                        href="<?php echo
+                        htmlspecialchars($oadueslookup_dues_url) ?>">dues
+                        form.</a><?php
+                        break;
+                    case "Not Checked":
+                        ?>You're apparently new here, and we haven't run a new
+                        audit against the BSA database since you were put in
+                        the OA database (or since your BSA Member ID was added to
+                        it).  Check back in a couple weeks to see if your
+                        status has updated.<?php
+                        break;
+                }
+                ?></td></tr>
+                </table><?php
             }
+?><br><p>Feel free to contact <a href="mailto:recordkeeper@nslodge.org?subject=Dues+question">recordkeeper@nslodge.org</a> with any questions.</p>
+<br><br><br>
+<p>Check another BSA Member ID:</p>
+<form method="POST" action="">
+<label for="bsaid">BSA Member ID:</label> <input id="bsaid" name="bsaid" type="text" size="9">
+<input type="submit" value="Go">
+</form>
+<?php
         } else {
 ?>
 <div class="oalm_dues_bad"><p>Invalid BSA Member ID entered, please try again.</p></div>
@@ -205,20 +280,26 @@ function oadueslookup_user_page( &$wp ) {
         }
 ?>
 <?php
-    }
+    } else {
 ?>
 <p>Enter your BSA Member ID to check your current dues status.</p>
 <form method="POST" action="">
 <label for="bsaid">BSA Member ID:</label> <input id="bsaid" name="bsaid" type="text" size="9">
 <input type="submit" value="Go">
 </form>
+<br>
+<p>You can find your Member ID at the bottom of your blue BSA Membership card:</p>
+<p><img src="<?php echo plugins_url("BSAMemberCard.png", __FILE__) ?>" alt="Membership Card" style="border: 1px solid #ccc;"></p>
+<p>If you can't find your membership card, your unit committee chairperson should be able to look it up on your unit recharter document, or your advancement chairperson can look it up in the Online Advancement System.</p>
 <?php
+    }
     return ob_get_clean();
 }
 
 function oadueslookup_url_handler( &$wp ) {
+    global $oadueslookup_slug;
     global $oadueslookup_body;
-    if($wp->request == 'dues') {
+    if($wp->request == $oadueslookup_slug) {
         # http://stackoverflow.com/questions/17960649/wordpress-plugin-generating-virtual-pages-and-using-theme-template
         add_action('template_redirect', 'oadueslookup_template_redir');
         $oadueslookup_body = oadueslookup_user_page($wp);
@@ -240,7 +321,7 @@ function oadueslookup_dummypost($posts) {
     $p->post_date = current_time('mysql');
     $p->post_date_gmt =  current_time('mysql', $gmt = 1);
     $p->post_content = $oadueslookup_body;
-    $p->post_title = 'Dues';
+    $p->post_title = 'Lodge Dues Status';
     $p->post_excerpt = '';
     $p->post_status = 'publish';
     $p->ping_status = 'closed';

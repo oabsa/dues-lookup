@@ -37,6 +37,12 @@
 add_action( 'admin_menu', 'oadueslookup_plugin_menu' );
 add_action( 'parse_request', 'oadueslookup_url_handler' );
 register_activation_hook( __FILE__, 'oadueslookup_install' );
+add_action( 'wp_enqueue_scripts', 'oadueslookup_enqueue_css' );
+
+function oadueslookup_enqueue_css() {
+    wp_register_style( 'oadueslookup-style', plugins_url('style.css', __FILE__) );
+    wp_enqueue_style('oadueslookup-style');
+}
 
 global $oadueslookup_db_version;
 $oadueslookup_db_version = 1;
@@ -133,39 +139,6 @@ function oadueslookup_user_page( &$wp ) {
     $dbprefix = $wpdb->prefix . "oalm_";
 
     ob_start();
-?>
-<style type="text/css"><!--
-.oalm_dues_table {
-  border: 1px solid black;
-  border-collapse: collapse;
-}
-.oalm_dues_table tr td {
-  border: 1px solid black;
-  padding: 5px;
-}
-.oalm_dues_table tr td.oalm_value {
-  text-align: center;
-  vertical-align: middle;
-  padding: 5px;
-}
-.oalm_dues_table tr td.oalm_desc {
-  text-align: center;
-  vertical-align: top;
-  padding: 5px;
-}
-.oalm_dues_table tr th {
-  border: 1px solid black;
-  text-align: right;
-  padding: 5px;
-}
-.oalm_dues_good {
-  color: green;
-}
-.oalm_dues_bad {
-  color: red;
-}
---></style>
-<?php
     if ( isset($_POST['bsaid']) ) {
         $bsaid = $_POST['bsaid'];
         if (preg_match('/^\d+$/', $bsaid)) {

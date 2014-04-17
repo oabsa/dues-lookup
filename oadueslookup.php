@@ -419,8 +419,85 @@ include plugin_dir_path( __FILE__ ) . 'PHPExcel-1.8.0/Classes/PHPExcel/Writer/Ex
     $objReader->setReadDataOnly(true);
     $objReader->setLoadSheetsOnly( array("Sheet") );
     $objPHPExcel = $objReader->load($_FILES["oalm_file"]["tmp_name"]);
-    $cellValue = $objPHPExcel->getActiveSheet()->getCell('A1')->getValue();
-    echo "<b>Cell A1 contains:</b> " . htmlspecialchars($cellValue) . "<br>";
+    $objWorksheet = $objPHPExcel->getActiveSheet();
+    $columnMap = array(
+        'BSA ID'            => 'bsaid',
+        'Max Dues Year'     => 'max_dues_year',
+        'Dues Paid Date'    => 'dues_paid_date',
+        'Level'             => 'level',
+        'Reg. Audit Result' => 'reg_audit_result',
+    );
+    foreach ($objWorksheet->getRowIterator() as $row) {
+        $rowData = array();
+        if ($row->getRowIndex() == 1) {
+            # this is the header row, grab the headings
+            $cellIterator = $row->getCellIterator();
+            $cellIterator->setIterateOnlyExistingCells(FALSE);
+            foreach ($cellIterator as $cell) {
+                $cellValue = $cell->getValue();
+                if (isset($columnMap[$cellValue])) {
+                    $rowData[$columnMap[$cellValue]] = 1;
+                    echo "Found column " . htmlspecialchars($cell->getColumn()) . " with title '" . htmlspecialchars($cellValue) . "'<br>" . PHP_EOL;
+                } else {
+                    echo "Discarding unknown column " . htmlspecialchars($cell->getColumn()) . " with title '" . htmlspecialchars($cellValue) . "'<br>" . PHP_EOL;
+                }
+            }
+            $missingColumns = 0;
+            foreach ($columnMap as $key => $value) {
+                if (!isset($rowData[$value])) {
+                    echo "<b>Fatal:</b> Missing required column '$key'.<br>" . PHP_EOL;
+                    $missingColumns = 1;
+                }
+            }
+            if ($missingColumns) {
+                break;
+            } else {
+                echo "<b>Data format validated:</b> Importing new data...<br>" . PHP_EOL;
+                # we just validated that we have a good data file, nuke the existing data
+                $wpdb->query("TRUNCATE TABLE ${dbprefix}dues_data");
+                # re-insert the test data
+                $wpdb->query("INSERT INTO ${dbprefix}dues_data " .
+                    "(bsaid, max_dues_year, dues_paid_date, level, reg_audit_result) VALUES " .
+                    "('123453','2013','2012-11-15','Brotherhood','Not Found'), " .
+                    "('123454','2014','2013-12-28','Ordeal','Not Registered'), " .
+                    "('123455','2014','2013-12-28','Brotherhood','Registered'), " .
+                    "('123456','2013','2013-07-15','Ordeal','Registered'), " .
+                    "('123457','2014','2013-12-18','Brotherhood','Not Found'), " .
+                    "('123458','2013','2013-03-15','Vigil','Not Registered'), " .
+                    "('123459','2015','2014-03-15','Ordeal','')"
+                );
+                # now we're ready for the incoming from the rest of the file.
+            }
+        } else {
+            $cellIterator = $row->getCellIterator();
+            $cellIterator->setIterateOnlyExistingCells(FALSE);
+            $complete = 0;
+            foreach ($cellIterator as $cell) {
+                if (($cell->getColumn() == "A") && (preg_match("/^Count=/", $cell->getValue()))) {
+                    echo "<b>Import complete:</b> imported " . htmlspecialchars($row->getRowIndex() - 2) . " records.<br>" . PHP_EOL;
+                    $complete = 1;
+                    break;
+                }
+                $columnName = $objWorksheet->getCell($cell->getColumn() . "1")->getValue();
+                $value = "";
+                if ($columnName == "Dues Paid Date") {
+                    # this is a date field, and we have to work miracles to turn it into a mysql-compatible date
+                    $date = $cell->getValue();
+                    $dateint = intval($date);
+                    $dateintVal = (int) $dateint;
+                    $value = PHPExcel_Style_NumberFormat::toFormattedString($dateintVal, "YYYY-MM-DD");
+                } else {
+                    $value = $cell->getValue();
+                }
+                if (isset($columnMap[$columnName])) {
+                    $rowData[$columnMap[$columnName]] = $value;
+                }
+            }
+            if (!$complete) {
+                $wpdb->insert($dbprefix . "dues_data", $rowData, array('%s','%s','%s','%s','%s'));
+            }
+        }
+    }
 }
 
     // ============================
@@ -440,8 +517,12 @@ include plugin_dir_path( __FILE__ ) . 'PHPExcel-1.8.0/Classes/PHPExcel/Writer/Ex
     // settings form
 
 ?>
+<h3>Import data from OALM</h3>
+<p>Export file from OALM Must contain at least the following columns:<br>
+BSA ID, Max Dues Year, Dues Paid Date, Level, Reg. Audit Result<br>
+Any additional columns will be ignored.</p>
 <form action="" method="post" enctype="multipart/form-data">
-<label for="oalm_file">Upload a new OALM Export file (xlsx):</label>
+<label for="oalm_file">Click Browse, then select the xlsx file exported from OALM's "Export Members", then click "Upload":</label><br>
 <input type="file" name="oalm_file" id="oalm_file" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
 <input type="submit" name="submit" value="Upload">
 </form>

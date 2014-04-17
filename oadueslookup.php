@@ -48,10 +48,6 @@ function oadueslookup_enqueue_css() {
 
 global $oadueslookup_db_version;
 $oadueslookup_db_version = 1;
-global $oadueslookup_slug;
-$oadueslookup_slug = 'dues';
-global $oadueslookup_dues_url;
-$oadueslookup_dues_url = "http://www.michiganscouting.org/Event.aspx?id=11755";
 
 function oadueslookup_create_table($ddl) {
     global $wpdb;
@@ -170,7 +166,6 @@ function oadueslookup_install_data() {
 }
 
 function oadueslookup_user_page( &$wp ) {
-    global $oadueslookup_dues_url;
     global $wpdb;
     $dbprefix = $wpdb->prefix . "oalm_";
 
@@ -187,12 +182,12 @@ function oadueslookup_user_page( &$wp ) {
 <li>You mistyped your ID</li>
 <li>You are not a member of the lodge.</li>
 <li>You have never paid dues.</li>
-<li>(most likely) We don't have your BSA Member ID on your record or have the 
+<li>(most likely) We don't have your BSA Member ID on your record or have the
 incorrect ID on your record.</li>
 </ul>
-<p>You should fill out the "Update Contact Information Only" option on the <a 
-href="<?php echo $oadueslookup_dues_url ?>">Dues Form</a> and make sure to 
-supply your BSA Member ID on the form, then check back here in a week to see if 
+<p>You should fill out the "Update Contact Information Only" option on the <a
+href="<?php echo get_option('oadueslookup_dues_url') ?>">Dues Form</a> and make sure to
+supply your BSA Member ID on the form, then check back here in a week to see if
 your status has updated.</p>
 <?php
             } else {
@@ -217,7 +212,7 @@ your status has updated.</p>
                 } else {
                     ?><span class="oalm_dues_bad">Your dues are not current.</span><?php
                     if (($reg_audit_result != "Not Registered") && ($reg_audit_result != "Not Found")) {
-                        ?><br><a href="<?php echo htmlspecialchars($oadueslookup_dues_url) ?>">Pay your dues online.</a><?php
+                        ?><br><a href="<?php echo htmlspecialchars(get_option('oadueslookup_dues_url')) ?>">Pay your dues online.</a><?php
                     }
                 }
 ?></td></tr>
@@ -264,7 +259,7 @@ your status has updated.</p>
                         information, please submit it to us by using the
                         "Update Contact Information" option on the <a
                         href="<?php echo
-                        htmlspecialchars($oadueslookup_dues_url) ?>">dues
+                        htmlspecialchars(get_option('oadueslookup_dues_url')) ?>">dues
                         form.</a><?php
                         break;
                     case "Not Checked":
@@ -278,7 +273,7 @@ your status has updated.</p>
                 ?></td></tr>
                 </table><?php
             }
-?><br><p>Feel free to contact <a href="mailto:recordkeeper@nslodge.org?subject=Dues+question">recordkeeper@nslodge.org</a> with any questions.</p>
+?><br><p>Feel free to contact <a href="mailto:<?php echo htmlspecialchars(get_option('oadueslookup_help_email')) ?>?subject=Dues+question"><?php echo htmlspecialchars(get_option('oadueslookup_help_email')) ?></a> with any questions.</p>
 <br><br><br>
 <p>Check another BSA Member ID:</p>
 <form method="POST" action="">
@@ -310,9 +305,8 @@ your status has updated.</p>
 }
 
 function oadueslookup_url_handler( &$wp ) {
-    global $oadueslookup_slug;
     global $oadueslookup_body;
-    if($wp->request == $oadueslookup_slug) {
+    if($wp->request == get_option('oadueslookup_slug')) {
         # http://stackoverflow.com/questions/17960649/wordpress-plugin-generating-virtual-pages-and-using-theme-template
         add_action('template_redirect', 'oadueslookup_template_redir');
         $oadueslookup_body = oadueslookup_user_page($wp);
@@ -339,7 +333,7 @@ function oadueslookup_dummypost($posts) {
     $p->post_status = 'publish';
     $p->ping_status = 'closed';
     $p->post_password = '';
-    $p->post_name = 'dues_page'; // slug
+    $p->post_name = get_option('oadueslookup_slug');
     $p->to_ping = '';
     $p->pinged = '';
     $p->modified = $p->post_date;
@@ -414,9 +408,9 @@ function oadueslookup_options() {
     // =========================
 
 if (isset($_FILES['oalm_file'])) {
-    echo "<h3>I got a file upload!</h3>";
-    echo "<b>Name:</b> " . $_FILES['oalm_file']['name'] . "<br>";
-    echo "<b>Type:</b> " . $_FILES['oalm_file']['type'] . "<br>";
+    echo "<h3>Processing file upload</h3>";
+    echo "<b>Processing File:</b> " . esc_html($_FILES['oalm_file']['name']) . "<br>";
+    echo "<b>Type:</b> " . esc_html($_FILES['oalm_file']['type']) . "<br>";
 
 /** PHPExcel */
 include plugin_dir_path( __FILE__ ) . 'PHPExcel-1.8.0/Classes/PHPExcel.php';
@@ -500,6 +494,48 @@ include plugin_dir_path( __FILE__ ) . 'PHPExcel-1.8.0/Classes/PHPExcel/Writer/Ex
     }
 }
 
+    //
+    // HANDLE SETTINGS SCREEN UPDATES
+    //
+
+    if( isset($_POST[ $hidden_field_name ]) && $_POST[ $hidden_field_name ] == 'oadueslookup-settings') {
+
+        $slug = $_POST['oadueslookup_slug'];
+        $dues_url = $_POST['oadueslookup_dues_url'];
+        $help_email = $_POST['oadueslookup_help_email'];
+
+        # $help_email is the only one that throws an error if it doesn't
+        # validate.  The others we just silently fix so they're something
+        # valid. The user will see the result on the form.
+        if (!is_email($help_email)) {
+            ?><div class="error"><p><strong>'<?php esc_html_e($help_email); ?>' is not a valid email address.</strong></p></div><?php
+        } else {
+
+            $foundchanges = 0;
+            $slug = sanitize_title($slug);
+            if ($slug != get_option('oadueslookup_slug')) {
+                update_option('oadueslookup_slug', $slug);
+                $foundchanges = 1;
+            }
+
+            $dues_url = esc_url_raw($dues_url);
+            if ($dues_url != get_option('oadueslookup_dues_url')) {
+                update_option('oadueslookup_dues_url', $dues_url);
+                $foundchanges = 1;
+            }
+
+            if ($help_email != get_option('oadueslookup_help_email')) {
+                update_option('oadueslookup_help_email', $help_email);
+                $foundchanges = 1;
+            }
+
+            if ($foundchanges) {
+                ?><div class="updated"><p><strong>Changes saved.</strong></p></div><?php
+            }
+        }
+
+    }
+
     // ============================
     // screens and forms start here
     // ============================
@@ -517,14 +553,42 @@ include plugin_dir_path( __FILE__ ) . 'PHPExcel-1.8.0/Classes/PHPExcel/Writer/Ex
     // settings form
 
 ?>
-<h3>Import data from OALM</h3>
+
+<h3 style="border-bottom: 1px solid black;">Import data from OALM</h3>
 <p>Export file from OALM Must contain at least the following columns:<br>
 BSA ID, Max Dues Year, Dues Paid Date, Level, Reg. Audit Result<br>
 Any additional columns will be ignored.</p>
 <form action="" method="post" enctype="multipart/form-data">
 <label for="oalm_file">Click Browse, then select the xlsx file exported from OALM's "Export Members", then click "Upload":</label><br>
 <input type="file" name="oalm_file" id="oalm_file" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
-<input type="submit" name="submit" value="Upload">
+<input type="submit" class="button button-primary" name="submit" value="Upload">
+</form>
+<h3 style="border-bottom: 1px solid black;">Lookup Page Settings</h3>
+<form name="oadueslookup-settings" method="post" action="">
+<input type="hidden" name="<?php echo $hidden_field_name; ?>" value="oadueslookup-settings">
+<table class="form-table">
+<tbody>
+<tr>
+  <th scope="row"><label for="oadueslookup_slug">Dues Page Slug</label></th>
+  <td><code><?php echo esc_html(get_option("siteurl")); ?>/</code><input id="oadueslookup_slug" name="oadueslookup_slug" class="regular-text code" type="text" value="<?php echo esc_html(get_option("oadueslookup_slug")); ?>">
+  <p class="description">The name appended to your Site URL to reach the lookup page.</p>
+  </td>
+</tr>
+<tr>
+  <th scope="row"><label for="oadueslookup_dues_url">Dues Payment URL</label></th>
+  <td><input id="oadueslookup_dues_url" name="oadueslookup_dues_url" class="regular-text code" type="text" value="<?php echo esc_html(get_option("oadueslookup_dues_url")); ?>">
+  <p class="description">The URL to send members to for actually paying their dues.</p>
+  </td>
+</tr>
+<tr>
+  <th scope="row"><label for="oadueslookup_help_email">Help Email</label></th>
+  <td><input id="oadueslookup_help_email" name="oadueslookup_help_email" class="regular-text code" type="text" value="<?php echo esc_html(get_option("oadueslookup_help_email")); ?>">
+  <p class="description">The email address for members to ask questions.</p>
+  </td>
+</tr>
+</tbody>
+</table>
+<p class="submit"><input id="submit" class="button button-primary" type="submit" value="Save Changes" name="submit"></p>
 </form>
 <?php
 

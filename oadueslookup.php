@@ -36,7 +36,9 @@
 
 add_action( 'admin_menu', 'oadueslookup_plugin_menu' );
 add_action( 'parse_request', 'oadueslookup_url_handler' );
+add_action( 'plugins_loaded', 'oadueslookup_update_db_check' );
 register_activation_hook( __FILE__, 'oadueslookup_install' );
+register_activation_hook( __FILE__, 'oadueslookup_install_data' );
 add_action( 'wp_enqueue_scripts', 'oadueslookup_enqueue_css' );
 
 function oadueslookup_enqueue_css() {
@@ -131,6 +133,40 @@ function oadueslookup_install() {
         // updates are done, update the schema version to say we did them
         update_option( "oadueslookup_db_version", $oadueslookup_db_version );
     }
+}
+
+function oadueslookup_update_db_check() {
+    global $oadueslookup_db_version;
+    if (get_site_option( 'oadueslookup_db_version' ) != $oadueslookup_db_version) {
+        oadueslookup_install();
+    }
+}
+
+function oadueslookup_insert_sample_data() {
+    global $wpdb;
+    $dbprefix = $wpdb->prefix . "oalm_";
+
+    $wpdb->query("INSERT INTO ${dbprefix}dues_data " .
+        "(bsaid, max_dues_year, dues_paid_date, level, reg_audit_result) VALUES " .
+        "('123453','2013','2012-11-15','Brotherhood','Not Found'), " .
+        "('123454','2014','2013-12-28','Ordeal','Not Registered'), " .
+        "('123455','2014','2013-12-28','Brotherhood','Registered'), " .
+        "('123456','2013','2013-07-15','Ordeal','Registered'), " .
+        "('123457','2014','2013-12-18','Brotherhood','Not Found'), " .
+        "('123458','2013','2013-03-15','Vigil','Not Registered'), " .
+        "('123459','2015','2014-03-15','Ordeal','')"
+    );
+}
+
+function oadueslookup_install_data() {
+    global $wpdb;
+    $dbprefix = $wpdb->prefix . "oalm_";
+
+    oadueslookup_insert_sample_data();
+
+    add_option('oadueslookup_slug', 'oadueslookup');
+    add_option('oadueslookup_dues_url', 'http://www.example.tld/paydues');
+    add_option('oadueslookup_help_email', 'duesadmin@example.tld');
 }
 
 function oadueslookup_user_page( &$wp ) {
@@ -429,16 +465,7 @@ include plugin_dir_path( __FILE__ ) . 'PHPExcel-1.8.0/Classes/PHPExcel/Writer/Ex
                 # we just validated that we have a good data file, nuke the existing data
                 $wpdb->query("TRUNCATE TABLE ${dbprefix}dues_data");
                 # re-insert the test data
-                $wpdb->query("INSERT INTO ${dbprefix}dues_data " .
-                    "(bsaid, max_dues_year, dues_paid_date, level, reg_audit_result) VALUES " .
-                    "('123453','2013','2012-11-15','Brotherhood','Not Found'), " .
-                    "('123454','2014','2013-12-28','Ordeal','Not Registered'), " .
-                    "('123455','2014','2013-12-28','Brotherhood','Registered'), " .
-                    "('123456','2013','2013-07-15','Ordeal','Registered'), " .
-                    "('123457','2014','2013-12-18','Brotherhood','Not Found'), " .
-                    "('123458','2013','2013-03-15','Vigil','Not Registered'), " .
-                    "('123459','2015','2014-03-15','Ordeal','')"
-                );
+                oadueslookup_insert_sample_data();
                 # now we're ready for the incoming from the rest of the file.
             }
         } else {

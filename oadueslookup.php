@@ -87,7 +87,7 @@ function oadueslookup_install() {
     // change it'll need update code (see below).
 
     $sql = "CREATE TABLE ${dbprefix}dues_data (
-  bsaid            MEDIUMINT(10) NOT NULL,
+  bsaid            INT NOT NULL,
   max_dues_year    VARCHAR(4),
   dues_paid_date   DATE,
   level            VARCHAR(12),

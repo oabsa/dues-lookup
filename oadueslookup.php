@@ -136,6 +136,14 @@ function oadueslookup_update_db_check() {
     if (get_site_option( 'oadueslookup_db_version' ) != $oadueslookup_db_version) {
         oadueslookup_install();
     }
+    # do these here instead of in the starting data insert code because these
+    # need to be created if they don't exist when the plugin gets upgraded,
+    # too, not just on a new install.  add_option does nothing if the option
+    # already exists, sets default value if it does not.
+    add_option('oadueslookup_slug', 'oadueslookup');
+    add_option('oadueslookup_dues_url', 'http://www.example.tld/paydues');
+    add_option('oadueslookup_help_email', 'duesadmin@example.tld');
+    add_option('oadueslookup_last_import', '1900-01-01');
 }
 
 function oadueslookup_insert_sample_data() {
@@ -160,9 +168,6 @@ function oadueslookup_install_data() {
 
     oadueslookup_insert_sample_data();
 
-    add_option('oadueslookup_slug', 'oadueslookup');
-    add_option('oadueslookup_dues_url', 'http://www.example.tld/paydues');
-    add_option('oadueslookup_help_email', 'duesadmin@example.tld');
 }
 
 function oadueslookup_user_page( &$wp ) {
@@ -274,6 +279,7 @@ your status has updated.</p>
                 </table><?php
             }
 ?><br><p>Feel free to contact <a href="mailto:<?php echo htmlspecialchars(get_option('oadueslookup_help_email')) ?>?subject=Dues+question"><?php echo htmlspecialchars(get_option('oadueslookup_help_email')) ?></a> with any questions.</p>
+<p><b>Database last updated:</b> <?php esc_html_e(get_option('oadueslookup_last_import')) ?></p>
 <br><br><br>
 <p>Check another BSA Member ID:</p>
 <form method="POST" action="">
@@ -489,6 +495,7 @@ include plugin_dir_path( __FILE__ ) . 'PHPExcel-1.8.0/Classes/PHPExcel/Writer/Ex
             }
             if (!$complete) {
                 $wpdb->insert($dbprefix . "dues_data", $rowData, array('%s','%s','%s','%s','%s'));
+                update_option('oadueslookup_last_import', $wpdb->get_var("SELECT DATE_FORMAT(NOW(), '%Y-%m-%d')"));
             }
         }
     }

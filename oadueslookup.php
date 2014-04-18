@@ -231,7 +231,7 @@ your status has updated.</p>
 ?></td></tr>
 <tr><th>Last Dues Payment</th><td class="oalm_value"><?php echo htmlspecialchars($dues_paid_date) ?></td><td class="oalm_desc"></td></tr>
 <tr><th>Your current honor/level</th><td class="oalm_value"><?php echo htmlspecialchars($level) ?></td><td class="oalm_desc"></td></tr>
-<tr><th>BSA Membership Status</th><td class="oalm_value"><?php echo esc_html($reg_audit_result) . "<br>as of<br>" . esc_html($reg_audit_date) ?></td><td class="oalm_desc"><?php
+<tr><th>BSA Membership Status</th><td class="oalm_value"><?php echo esc_html($reg_audit_result); if ($reg_audit_result != 'Registered') { echo "<br>as of<br>" . esc_html($reg_audit_date); } ?></td><td class="oalm_desc" style="text-align: left;"><?php
                 switch ($reg_audit_result) {
                     case "Registered":
                         ?><span class="oalm_dues_good">You are currently an
@@ -254,7 +254,10 @@ your status has updated.</p>
                         <b>are</b> currently a member of a Scouting unit,
                         please have your unit chairperson check to make sure
                         your registration has been properly submitted to the
-                        council.<?php
+                        council. If you are a member of more than one unit,
+                        please check with all of them, as only the "primary"
+                        unit counts, and it's not always clear which one is
+                        primary.<?php
                         break;
                     case "Not Found":
                         ?><span class="oalm_dues_bad">Our most recent audit
@@ -276,14 +279,14 @@ your status has updated.</p>
                         form.</a><?php
                         break;
                     case "Not Checked":
-                        ?>One of the following applies:<ul> <li>You're new, and
-                        we haven't run a new audit against the BSA database
-                        since you were put in the OA database</li> <li>Your BSA
-                        Member ID was just recently added to the OA database,
-                        and a new audit hasn't been run yet.</li> <li>You
-                        haven't paid dues in over 3 years, so we didn't include
-                        you in the audit because we thought you were
-                        inactive.</li></ul> <?php
+                        ?>This means one of the following things:<ul>
+                        <li>You're new, and we haven't run a new audit against
+                        the BSA database since you were put in the OA
+                        database</li> <li>Your BSA Member ID was just recently
+                        added to the OA database, and a new audit hasn't been
+                        run yet.</li> <li>You haven't paid dues in over 3
+                        years, so we didn't include you in the audit because we
+                        thought you were inactive.</li></ul> <?php
                         break;
                 }
                 ?></td></tr>

@@ -430,122 +430,122 @@ if (isset($_FILES['oalm_file'])) {
     #echo "<b>Type:</b> " . esc_html($_FILES['oalm_file']['type']) . "<br>";
     if (preg_match('/\.xlsx$/',$_FILES['oalm_file']['name'])) {
 
-/** PHPExcel */
-include plugin_dir_path( __FILE__ ) . 'PHPExcel-1.8.0/Classes/PHPExcel.php';
+        /** PHPExcel */
+        include plugin_dir_path( __FILE__ ) . 'PHPExcel-1.8.0/Classes/PHPExcel.php';
 
-/** PHPExcel_Writer_Excel2007 */
-include plugin_dir_path( __FILE__ ) . 'PHPExcel-1.8.0/Classes/PHPExcel/Writer/Excel2007.php';
+        /** PHPExcel_Writer_Excel2007 */
+        include plugin_dir_path( __FILE__ ) . 'PHPExcel-1.8.0/Classes/PHPExcel/Writer/Excel2007.php';
 
-    $objReader = new PHPExcel_Reader_Excel2007();
-    $objReader->setReadDataOnly(true);
-    $objReader->setLoadSheetsOnly( array("Sheet") );
-    $objPHPExcel = $objReader->load($_FILES["oalm_file"]["tmp_name"]);
-    $objWorksheet = $objPHPExcel->getActiveSheet();
-    $columnMap = array(
-        'BSA ID'            => 'bsaid',
-        'Max Dues Year'     => 'max_dues_year',
-        'Dues Paid Date'    => 'dues_paid_date',
-        'Level'             => 'level',
-        'Reg. Audit Date'   => 'reg_audit_date',
-        'Reg. Audit Result' => 'reg_audit_result',
-    );
-    $complete = 0;
-    $recordcount = 0;
-    $error_output = "";
-    foreach ($objWorksheet->getRowIterator() as $row) {
-        $rowData = array();
-        if ($row->getRowIndex() == 1) {
-            # this is the header row, grab the headings
-            $cellIterator = $row->getCellIterator();
-            $cellIterator->setIterateOnlyExistingCells(FALSE);
-            foreach ($cellIterator as $cell) {
-                $cellValue = $cell->getValue();
-                if (isset($columnMap[$cellValue])) {
-                    $rowData[$columnMap[$cellValue]] = 1;
-                    #echo "Found column " . htmlspecialchars($cell->getColumn()) . " with title '" . htmlspecialchars($cellValue) . "'<br>" . PHP_EOL;
-                } else {
-                    #echo "Discarding unknown column " . htmlspecialchars($cell->getColumn()) . " with title '" . htmlspecialchars($cellValue) . "'<br>" . PHP_EOL;
-                }
-            }
-            $missingColumns = array();
-            foreach ($columnMap as $key => $value) {
-                if (!isset($rowData[$value])) {
-                    $missingColumns[] = $key;
-                }
-            }
-            if ($missingColumns) {
-                ?><div class="error"><p><strong>Import failed.</strong></p><p>Missing required columns: <?php esc_html_e(implode(", ",$missingColumns)) ?></div><?php
-                $complete = 1; # Don't show "may have failed" box at the bottom
-                break;
-            } else {
-                #echo "<b>Data format validated:</b> Importing new data...<br>" . PHP_EOL;
-                # we just validated that we have a good data file, nuke the existing data
-                $wpdb->show_errors();
-                ob_start();
-                $wpdb->query("TRUNCATE TABLE ${dbprefix}dues_data");
-                update_option('oadueslookup_last_import', $wpdb->get_var("SELECT DATE_FORMAT(NOW(), '%Y-%m-%d')"));
-                # re-insert the test data
-                oadueslookup_insert_sample_data();
-                # now we're ready for the incoming from the rest of the file.
-            }
-        } else {
-            $cellIterator = $row->getCellIterator();
-            $cellIterator->setIterateOnlyExistingCells(FALSE);
-            foreach ($cellIterator as $cell) {
-                if (($cell->getColumn() == "A") && (preg_match("/^Count=/", $cell->getValue()))) {
-                    $complete = 1;
-                    $error_output = ob_get_clean();
-                    if (!$error_output) {
-                    ?><div class="updated"><p><strong>Import successful. Imported <?php esc_html_e($recordcount) ?> records.</strong></p></div><?php
+        $objReader = new PHPExcel_Reader_Excel2007();
+        $objReader->setReadDataOnly(true);
+        $objReader->setLoadSheetsOnly( array("Sheet") );
+        $objPHPExcel = $objReader->load($_FILES["oalm_file"]["tmp_name"]);
+        $objWorksheet = $objPHPExcel->getActiveSheet();
+        $columnMap = array(
+            'BSA ID'            => 'bsaid',
+            'Max Dues Year'     => 'max_dues_year',
+            'Dues Paid Date'    => 'dues_paid_date',
+            'Level'             => 'level',
+            'Reg. Audit Date'   => 'reg_audit_date',
+            'Reg. Audit Result' => 'reg_audit_result',
+        );
+        $complete = 0;
+        $recordcount = 0;
+        $error_output = "";
+        foreach ($objWorksheet->getRowIterator() as $row) {
+            $rowData = array();
+            if ($row->getRowIndex() == 1) {
+                # this is the header row, grab the headings
+                $cellIterator = $row->getCellIterator();
+                $cellIterator->setIterateOnlyExistingCells(FALSE);
+                foreach ($cellIterator as $cell) {
+                    $cellValue = $cell->getValue();
+                    if (isset($columnMap[$cellValue])) {
+                        $rowData[$columnMap[$cellValue]] = 1;
+                        #echo "Found column " . htmlspecialchars($cell->getColumn()) . " with title '" . htmlspecialchars($cellValue) . "'<br>" . PHP_EOL;
                     } else {
-                        ?><div class="error"><p><strong>Import partially successful. Imported <?php esc_html_e($recordcount) ?> of <?php esc_html_e($row->getRowIndex() - 2) ?> records.</strong></p>
-                        <p>Errors follow:</p>
-                        <?php echo $error_output ?>
-                        </div><?php
+                        #echo "Discarding unknown column " . htmlspecialchars($cell->getColumn()) . " with title '" . htmlspecialchars($cellValue) . "'<br>" . PHP_EOL;
                     }
-                    break;
                 }
-                $columnName = $objWorksheet->getCell($cell->getColumn() . "1")->getValue();
-                $value = "";
-                if ($columnName == "Dues Paid Date") {
-                    # this is a date field, and we have to work miracles to turn it into a mysql-compatible date
-                    $date = $cell->getValue();
-                    $dateint = intval($date);
-                    $dateintVal = (int) $dateint;
-                    $value = PHPExcel_Style_NumberFormat::toFormattedString($dateintVal, "YYYY-MM-DD");
-                } else if ($columnName == "Reg. Audit Date") {
-                    # this is also a date field, but can be empty
-                    $date = $cell->getValue();
-                    if (!$date) {
-                        $value = get_option('oadueslookup_last_import');
-                    } else {
+                $missingColumns = array();
+                foreach ($columnMap as $key => $value) {
+                    if (!isset($rowData[$value])) {
+                        $missingColumns[] = $key;
+                    }
+                }
+                if ($missingColumns) {
+                    ?><div class="error"><p><strong>Import failed.</strong></p><p>Missing required columns: <?php esc_html_e(implode(", ",$missingColumns)) ?></div><?php
+                    $complete = 1; # Don't show "may have failed" box at the bottom
+                    break;
+                } else {
+                    #echo "<b>Data format validated:</b> Importing new data...<br>" . PHP_EOL;
+                    # we just validated that we have a good data file, nuke the existing data
+                    $wpdb->show_errors();
+                    ob_start();
+                    $wpdb->query("TRUNCATE TABLE ${dbprefix}dues_data");
+                    update_option('oadueslookup_last_import', $wpdb->get_var("SELECT DATE_FORMAT(NOW(), '%Y-%m-%d')"));
+                    # re-insert the test data
+                    oadueslookup_insert_sample_data();
+                    # now we're ready for the incoming from the rest of the file.
+                }
+            } else {
+                $cellIterator = $row->getCellIterator();
+                $cellIterator->setIterateOnlyExistingCells(FALSE);
+                foreach ($cellIterator as $cell) {
+                    if (($cell->getColumn() == "A") && (preg_match("/^Count=/", $cell->getValue()))) {
+                        $complete = 1;
+                        $error_output = ob_get_clean();
+                        if (!$error_output) {
+                        ?><div class="updated"><p><strong>Import successful. Imported <?php esc_html_e($recordcount) ?> records.</strong></p></div><?php
+                        } else {
+                            ?><div class="error"><p><strong>Import partially successful. Imported <?php esc_html_e($recordcount) ?> of <?php esc_html_e($row->getRowIndex() - 2) ?> records.</strong></p>
+                            <p>Errors follow:</p>
+                            <?php echo $error_output ?>
+                            </div><?php
+                        }
+                        break;
+                    }
+                    $columnName = $objWorksheet->getCell($cell->getColumn() . "1")->getValue();
+                    $value = "";
+                    if ($columnName == "Dues Paid Date") {
+                        # this is a date field, and we have to work miracles to turn it into a mysql-compatible date
+                        $date = $cell->getValue();
                         $dateint = intval($date);
                         $dateintVal = (int) $dateint;
                         $value = PHPExcel_Style_NumberFormat::toFormattedString($dateintVal, "YYYY-MM-DD");
+                    } else if ($columnName == "Reg. Audit Date") {
+                        # this is also a date field, but can be empty
+                        $date = $cell->getValue();
+                        if (!$date) {
+                            $value = get_option('oadueslookup_last_import');
+                        } else {
+                            $dateint = intval($date);
+                            $dateintVal = (int) $dateint;
+                            $value = PHPExcel_Style_NumberFormat::toFormattedString($dateintVal, "YYYY-MM-DD");
+                        }
+                    } else {
+                        $value = $cell->getValue();
                     }
-                } else {
-                    $value = $cell->getValue();
+                    if (isset($columnMap[$columnName])) {
+                        $rowData[$columnMap[$columnName]] = $value;
+                    }
                 }
-                if (isset($columnMap[$columnName])) {
-                    $rowData[$columnMap[$columnName]] = $value;
-                }
-            }
-            if (!$complete) {
-                if ($wpdb->insert($dbprefix . "dues_data", $rowData, array('%s','%s','%s','%s','%s'))) {
-                    $recordcount++;
+                if (!$complete) {
+                    if ($wpdb->insert($dbprefix . "dues_data", $rowData, array('%s','%s','%s','%s','%s'))) {
+                        $recordcount++;
+                    }
                 }
             }
         }
-    }
-    if (!$complete) {
-        $error_output = ob_get_clean();
-        ?><div class="error"><p><strong>Import may have failed.</strong></p><p>Imported <?php esc_html_e($recordcount) ?> records, but end of file marker from OALM was not reached.</p><?php
-        if ($error_output) {
-            ?><p>Errors follow:</p>
-            <?php echo $error_output;
+        if (!$complete) {
+            $error_output = ob_get_clean();
+            ?><div class="error"><p><strong>Import may have failed.</strong></p><p>Imported <?php esc_html_e($recordcount) ?> records, but end of file marker from OALM was not reached.</p><?php
+            if ($error_output) {
+                ?><p>Errors follow:</p>
+                <?php echo $error_output;
+            }
+            ?></div><?php
         }
-        ?></div><?php
-    }
     } else {
         ?><div class="error"><p><strong>Invalid file upload.</strong> Not an XLSX file.</p></div><?php
     }

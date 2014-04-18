@@ -158,11 +158,11 @@ function oadueslookup_insert_sample_data() {
 
     $wpdb->query("INSERT INTO ${dbprefix}dues_data " .
         "(bsaid,    max_dues_year, dues_paid_date, level,        reg_audit_date, reg_audit_result) VALUES " .
-        "('123453','2013',         '2012-11-15',   'Brotherhood','1900-01-01',   'Not Found'), " .
+        "('123453','2013',         '2012-11-15',   'Brotherhood','1900-01-01',   'No Match Found'), " .
         "('123454','2014',         '2013-12-28',   'Ordeal',     '1900-01-01',   'Not Registered'), " .
         "('123455','2014',         '2013-12-28',   'Brotherhood','1900-01-01',   'Registered'), " .
         "('123456','2013',         '2013-07-15',   'Ordeal',     '1900-01-01',   'Registered'), " .
-        "('123457','2014',         '2013-12-18',   'Brotherhood','1900-01-01',   'Not Found'), " .
+        "('123457','2014',         '2013-12-18',   'Brotherhood','1900-01-01',   'No Match Found'), " .
         "('123458','2013',         '2013-03-15',   'Vigil',      '1900-01-01',   'Not Registered'), " .
         "('123459','2015',         '2014-03-15',   'Ordeal',     '" .
                             esc_sql(get_option('oadueslookup_last_import')) . "','')"
@@ -216,7 +216,7 @@ your status has updated.</p>
                 $thedate = getdate();
                 if ($max_dues_year >= $thedate['year']) {
                     ?><span class="oalm_dues_good">Your dues are current.</span><?php
-                    if (($reg_audit_result == "Not Registered") || ($reg_audit_result == "Not Found")) {
+                    if (($reg_audit_result == "Not Registered") || ($reg_audit_result == "No Match Found")) {
                         ?><br><span class="oalm_dues_bad">However, your OA
                         membership is not currently valid because we could not
                         verify your BSA Membership status (see
@@ -224,7 +224,7 @@ your status has updated.</p>
                     }
                 } else {
                     ?><span class="oalm_dues_bad">Your dues are not current.</span><?php
-                    if (($reg_audit_result != "Not Registered") && ($reg_audit_result != "Not Found")) {
+                    if (($reg_audit_result != "Not Registered") && ($reg_audit_result != "No Match Found")) {
                         ?><br><a href="<?php echo htmlspecialchars(get_option('oadueslookup_dues_url')) ?>">Pay your dues online.</a><?php
                     }
                 }
@@ -259,7 +259,7 @@ your status has updated.</p>
                         unit counts, and it's not always clear which one is
                         primary.<?php
                         break;
-                    case "Not Found":
+                    case "No Match Found":
                         ?><span class="oalm_dues_bad">Our most recent audit
                         could not find you in the BSA database.</span><br>This
                         almost always means the information we have on file for

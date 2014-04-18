@@ -27,6 +27,9 @@ https://github.com/PHPOffice/PHPExcel
 1. Go to "OA Dues Lookup" under "Settings" to find the settings and to upload data.
 
 == Changelog ==  
+= 1.0.1 =  
+* fix a conflict with some themes
+
 = 1.0 =  
 * Initial release.
 

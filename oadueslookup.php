@@ -183,7 +183,7 @@ function oadueslookup_user_page( &$wp ) {
 
     ob_start();
     if ( isset($_POST['bsaid']) ) {
-        $bsaid = $_POST['bsaid'];
+        $bsaid = trim($_POST['bsaid']);
         if (preg_match('/^\d+$/', $bsaid)) {
             $results = $wpdb->get_row($wpdb->prepare("SELECT max_dues_year, dues_paid_date, level, reg_audit_date, reg_audit_result FROM ${dbprefix}dues_data WHERE bsaid = %d", array($bsaid)));
             if (!isset($results)) {
@@ -622,7 +622,7 @@ Any additional columns will be ignored.</p>
 <tbody>
 <tr>
   <th scope="row"><label for="oadueslookup_slug">Dues Page Slug</label></th>
-  <td><code><?php echo esc_html(get_option("siteurl")); ?>/</code><input id="oadueslookup_slug" name="oadueslookup_slug" class="regular-text code" type="text" value="<?php echo esc_html(get_option("oadueslookup_slug")); ?>">
+  <td><code><?php echo esc_html(get_option("home")); ?>/</code><input id="oadueslookup_slug" name="oadueslookup_slug" class="regular-text code" type="text" value="<?php echo esc_html(get_option("oadueslookup_slug")); ?>">
   <p class="description">The name appended to your Site URL to reach the lookup page.</p>
   </td>
 </tr>

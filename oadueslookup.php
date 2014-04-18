@@ -325,11 +325,12 @@ your status has updated.</p>
 }
 
 function oadueslookup_url_handler( &$wp ) {
-    global $oadueslookup_body;
     if($wp->request == get_option('oadueslookup_slug')) {
         # http://stackoverflow.com/questions/17960649/wordpress-plugin-generating-virtual-pages-and-using-theme-template
-        add_action('template_redirect', 'oadueslookup_template_redir');
-        $oadueslookup_body = oadueslookup_user_page($wp);
+        # Note that we don't need to do a template redirect as suggesting in
+        # the example because all we do is load the template anyway. We can let
+        # the real template code work like it's supposed to and only override
+        # the content.
         add_filter('the_posts', 'oadueslookup_dummypost');
         remove_filter('the_content', 'wpautop');
     }
@@ -338,7 +339,7 @@ function oadueslookup_url_handler( &$wp ) {
 function oadueslookup_dummypost($posts) {
     // have to create a dummy post as otherwise many templates
     // don't call the_content filter
-    global $wp, $wp_query, $oadueslookup_body;
+    global $wp, $wp_query;
 
     //create a fake post intance
     $p = new stdClass;
@@ -347,7 +348,7 @@ function oadueslookup_dummypost($posts) {
     $p->post_author = 1;
     $p->post_date = current_time('mysql');
     $p->post_date_gmt =  current_time('mysql', $gmt = 1);
-    $p->post_content = $oadueslookup_body;
+    $p->post_content = oadueslookup_user_page($wp);
     $p->post_title = 'Lodge Dues Status';
     $p->post_excerpt = '';
     $p->post_status = 'publish';
@@ -396,16 +397,6 @@ function oadueslookup_dummypost($posts) {
     $wp_query->post_count = 1;
 
     return array($p);
-}
-
-function oadueslookup_template_redir() {
-    # By including the "dues" subtag here, if someone wanted to re-theme this
-    # page, they could, by creating a "page-dues.php" templates file. Otherwise
-    # it just uses page.php.
-    get_template_part('page', 'dues');
-    # we're done, because the above should have displayed the entire page, so
-    # quit instead of letting WP try to display it again.
-    exit;
 }
 
 function oadueslookup_plugin_menu() {

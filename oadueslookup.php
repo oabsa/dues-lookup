@@ -47,7 +47,7 @@ function oadueslookup_enqueue_css() {
 }
 
 global $oadueslookup_db_version;
-$oadueslookup_db_version = 1;
+$oadueslookup_db_version = 2;
 
 function oadueslookup_create_table($ddl) {
     global $wpdb;
@@ -95,6 +95,7 @@ function oadueslookup_install() {
   max_dues_year    VARCHAR(4),
   dues_paid_date   DATE,
   level            VARCHAR(12),
+  reg_audit_date   DATE,
   reg_audit_result VARCHAR(15),
   PRIMARY KEY (bsaid)
 );";
@@ -120,6 +121,11 @@ function oadueslookup_install() {
         // current version so we don't run any update code.
         $installed_version = $oadueslookup_db_version;
         add_option( "oadueslookup_db_version", $oadueslookup_db_version );
+    }
+
+    if ($installed_version < 2) {
+        # Add a column for the Last Audit Date field
+        $wpdb->query("ALTER TABLE ${dbprefix}dues_data ADD COLUMN reg_audit_date DATE");
     }
 
     // insert next database revision update code immediately above this line.
@@ -151,14 +157,15 @@ function oadueslookup_insert_sample_data() {
     $dbprefix = $wpdb->prefix . "oalm_";
 
     $wpdb->query("INSERT INTO ${dbprefix}dues_data " .
-        "(bsaid, max_dues_year, dues_paid_date, level, reg_audit_result) VALUES " .
-        "('123453','2013','2012-11-15','Brotherhood','Not Found'), " .
-        "('123454','2014','2013-12-28','Ordeal','Not Registered'), " .
-        "('123455','2014','2013-12-28','Brotherhood','Registered'), " .
-        "('123456','2013','2013-07-15','Ordeal','Registered'), " .
-        "('123457','2014','2013-12-18','Brotherhood','Not Found'), " .
-        "('123458','2013','2013-03-15','Vigil','Not Registered'), " .
-        "('123459','2015','2014-03-15','Ordeal','')"
+        "(bsaid,    max_dues_year, dues_paid_date, level,        reg_audit_date, reg_audit_result) VALUES " .
+        "('123453','2013',         '2012-11-15',   'Brotherhood','1900-01-01',   'Not Found'), " .
+        "('123454','2014',         '2013-12-28',   'Ordeal',     '1900-01-01',   'Not Registered'), " .
+        "('123455','2014',         '2013-12-28',   'Brotherhood','1900-01-01',   'Registered'), " .
+        "('123456','2013',         '2013-07-15',   'Ordeal',     '1900-01-01',   'Registered'), " .
+        "('123457','2014',         '2013-12-18',   'Brotherhood','1900-01-01',   'Not Found'), " .
+        "('123458','2013',         '2013-03-15',   'Vigil',      '1900-01-01',   'Not Registered'), " .
+        "('123459','2015',         '2014-03-15',   'Ordeal',     '" .
+                            esc_sql(get_option('oadueslookup_last_import')) . "','')"
     );
 }
 
@@ -178,7 +185,7 @@ function oadueslookup_user_page( &$wp ) {
     if ( isset($_POST['bsaid']) ) {
         $bsaid = $_POST['bsaid'];
         if (preg_match('/^\d+$/', $bsaid)) {
-            $results = $wpdb->get_row($wpdb->prepare("SELECT max_dues_year, dues_paid_date, level, reg_audit_result FROM ${dbprefix}dues_data WHERE bsaid = %d", array($bsaid)));
+            $results = $wpdb->get_row($wpdb->prepare("SELECT max_dues_year, dues_paid_date, level, reg_audit_date, reg_audit_result FROM ${dbprefix}dues_data WHERE bsaid = %d", array($bsaid)));
             if (!isset($results)) {
 ?>
 <div class="oalm_dues_bad"><p>Your BSA Member ID <?php echo htmlspecialchars($bsaid) ?> was not found.</p></div>
@@ -199,6 +206,7 @@ your status has updated.</p>
                 $max_dues_year = $results->max_dues_year;
                 $dues_paid_date = $results->dues_paid_date;
                 $level = $results->level;
+                $reg_audit_date = $results->reg_audit_date;
                 $reg_audit_result = $results->reg_audit_result;
                 if ($reg_audit_result == "") { $reg_audit_result = "Not Checked"; }
 ?>
@@ -223,7 +231,7 @@ your status has updated.</p>
 ?></td></tr>
 <tr><th>Last Dues Payment</th><td class="oalm_value"><?php echo htmlspecialchars($dues_paid_date) ?></td><td class="oalm_desc"></td></tr>
 <tr><th>Your current honor/level</th><td class="oalm_value"><?php echo htmlspecialchars($level) ?></td><td class="oalm_desc"></td></tr>
-<tr><th>BSA Membership Status</th><td class="oalm_value"><?php echo htmlspecialchars($reg_audit_result) ?></td><td class="oalm_desc"><?php
+<tr><th>BSA Membership Status</th><td class="oalm_value"><?php echo esc_html($reg_audit_result) . "<br>as of<br>" . esc_html($reg_audit_date) ?></td><td class="oalm_desc"><?php
                 switch ($reg_audit_result) {
                     case "Registered":
                         ?><span class="oalm_dues_good">You are currently an
@@ -268,11 +276,14 @@ your status has updated.</p>
                         form.</a><?php
                         break;
                     case "Not Checked":
-                        ?>You're apparently new here, and we haven't run a new
-                        audit against the BSA database since you were put in
-                        the OA database (or since your BSA Member ID was added to
-                        it).  Check back in a couple weeks to see if your
-                        status has updated.<?php
+                        ?>One of the following applies:<ul> <li>You're new, and
+                        we haven't run a new audit against the BSA database
+                        since you were put in the OA database</li> <li>Your BSA
+                        Member ID was just recently added to the OA database,
+                        and a new audit hasn't been run yet.</li> <li>You
+                        haven't paid dues in over 3 years, so we didn't include
+                        you in the audit because we thought you were
+                        inactive.</li></ul> <?php
                         break;
                 }
                 ?></td></tr>
@@ -414,9 +425,10 @@ function oadueslookup_options() {
     // =========================
 
 if (isset($_FILES['oalm_file'])) {
-    echo "<h3>Processing file upload</h3>";
-    echo "<b>Processing File:</b> " . esc_html($_FILES['oalm_file']['name']) . "<br>";
-    echo "<b>Type:</b> " . esc_html($_FILES['oalm_file']['type']) . "<br>";
+    #echo "<h3>Processing file upload</h3>";
+    #echo "<b>Processing File:</b> " . esc_html($_FILES['oalm_file']['name']) . "<br>";
+    #echo "<b>Type:</b> " . esc_html($_FILES['oalm_file']['type']) . "<br>";
+    if (preg_match('/\.xlsx$/',$_FILES['oalm_file']['name'])) {
 
 /** PHPExcel */
 include plugin_dir_path( __FILE__ ) . 'PHPExcel-1.8.0/Classes/PHPExcel.php';
@@ -434,8 +446,12 @@ include plugin_dir_path( __FILE__ ) . 'PHPExcel-1.8.0/Classes/PHPExcel/Writer/Ex
         'Max Dues Year'     => 'max_dues_year',
         'Dues Paid Date'    => 'dues_paid_date',
         'Level'             => 'level',
+        'Reg. Audit Date'   => 'reg_audit_date',
         'Reg. Audit Result' => 'reg_audit_result',
     );
+    $complete = 0;
+    $recordcount = 0;
+    $error_output = "";
     foreach ($objWorksheet->getRowIterator() as $row) {
         $rowData = array();
         if ($row->getRowIndex() == 1) {
@@ -446,24 +462,28 @@ include plugin_dir_path( __FILE__ ) . 'PHPExcel-1.8.0/Classes/PHPExcel/Writer/Ex
                 $cellValue = $cell->getValue();
                 if (isset($columnMap[$cellValue])) {
                     $rowData[$columnMap[$cellValue]] = 1;
-                    echo "Found column " . htmlspecialchars($cell->getColumn()) . " with title '" . htmlspecialchars($cellValue) . "'<br>" . PHP_EOL;
+                    #echo "Found column " . htmlspecialchars($cell->getColumn()) . " with title '" . htmlspecialchars($cellValue) . "'<br>" . PHP_EOL;
                 } else {
-                    echo "Discarding unknown column " . htmlspecialchars($cell->getColumn()) . " with title '" . htmlspecialchars($cellValue) . "'<br>" . PHP_EOL;
+                    #echo "Discarding unknown column " . htmlspecialchars($cell->getColumn()) . " with title '" . htmlspecialchars($cellValue) . "'<br>" . PHP_EOL;
                 }
             }
-            $missingColumns = 0;
+            $missingColumns = array();
             foreach ($columnMap as $key => $value) {
                 if (!isset($rowData[$value])) {
-                    echo "<b>Fatal:</b> Missing required column '$key'.<br>" . PHP_EOL;
-                    $missingColumns = 1;
+                    $missingColumns[] = $key;
                 }
             }
             if ($missingColumns) {
+                ?><div class="error"><p><strong>Import failed.</strong></p><p>Missing required columns: <?php esc_html_e(implode(", ",$missingColumns)) ?></div><?php
+                $complete = 1; # Don't show "may have failed" box at the bottom
                 break;
             } else {
-                echo "<b>Data format validated:</b> Importing new data...<br>" . PHP_EOL;
+                #echo "<b>Data format validated:</b> Importing new data...<br>" . PHP_EOL;
                 # we just validated that we have a good data file, nuke the existing data
+                $wpdb->show_errors();
+                ob_start();
                 $wpdb->query("TRUNCATE TABLE ${dbprefix}dues_data");
+                update_option('oadueslookup_last_import', $wpdb->get_var("SELECT DATE_FORMAT(NOW(), '%Y-%m-%d')"));
                 # re-insert the test data
                 oadueslookup_insert_sample_data();
                 # now we're ready for the incoming from the rest of the file.
@@ -471,11 +491,18 @@ include plugin_dir_path( __FILE__ ) . 'PHPExcel-1.8.0/Classes/PHPExcel/Writer/Ex
         } else {
             $cellIterator = $row->getCellIterator();
             $cellIterator->setIterateOnlyExistingCells(FALSE);
-            $complete = 0;
             foreach ($cellIterator as $cell) {
                 if (($cell->getColumn() == "A") && (preg_match("/^Count=/", $cell->getValue()))) {
-                    echo "<b>Import complete:</b> imported " . htmlspecialchars($row->getRowIndex() - 2) . " records.<br>" . PHP_EOL;
                     $complete = 1;
+                    $error_output = ob_get_clean();
+                    if (!$error_output) {
+                    ?><div class="updated"><p><strong>Import successful. Imported <?php esc_html_e($recordcount) ?> records.</strong></p></div><?php
+                    } else {
+                        ?><div class="error"><p><strong>Import partially successful. Imported <?php esc_html_e($recordcount) ?> of <?php esc_html_e($row->getRowIndex() - 2) ?> records.</strong></p>
+                        <p>Errors follow:</p>
+                        <?php echo $error_output ?>
+                        </div><?php
+                    }
                     break;
                 }
                 $columnName = $objWorksheet->getCell($cell->getColumn() . "1")->getValue();
@@ -486,6 +513,16 @@ include plugin_dir_path( __FILE__ ) . 'PHPExcel-1.8.0/Classes/PHPExcel/Writer/Ex
                     $dateint = intval($date);
                     $dateintVal = (int) $dateint;
                     $value = PHPExcel_Style_NumberFormat::toFormattedString($dateintVal, "YYYY-MM-DD");
+                } else if ($columnName == "Reg. Audit Date") {
+                    # this is also a date field, but can be empty
+                    $date = $cell->getValue();
+                    if (!$date) {
+                        $value = get_option('oadueslookup_last_import');
+                    } else {
+                        $dateint = intval($date);
+                        $dateintVal = (int) $dateint;
+                        $value = PHPExcel_Style_NumberFormat::toFormattedString($dateintVal, "YYYY-MM-DD");
+                    }
                 } else {
                     $value = $cell->getValue();
                 }
@@ -494,10 +531,23 @@ include plugin_dir_path( __FILE__ ) . 'PHPExcel-1.8.0/Classes/PHPExcel/Writer/Ex
                 }
             }
             if (!$complete) {
-                $wpdb->insert($dbprefix . "dues_data", $rowData, array('%s','%s','%s','%s','%s'));
-                update_option('oadueslookup_last_import', $wpdb->get_var("SELECT DATE_FORMAT(NOW(), '%Y-%m-%d')"));
+                if ($wpdb->insert($dbprefix . "dues_data", $rowData, array('%s','%s','%s','%s','%s'))) {
+                    $recordcount++;
+                }
             }
         }
+    }
+    if (!$complete) {
+        $error_output = ob_get_clean();
+        ?><div class="error"><p><strong>Import may have failed.</strong></p><p>Imported <?php esc_html_e($recordcount) ?> records, but end of file marker from OALM was not reached.</p><?php
+        if ($error_output) {
+            ?><p>Errors follow:</p>
+            <?php echo $error_output;
+        }
+        ?></div><?php
+    }
+    } else {
+        ?><div class="error"><p><strong>Invalid file upload.</strong> Not an XLSX file.</p></div><?php
     }
 }
 
@@ -563,8 +613,9 @@ include plugin_dir_path( __FILE__ ) . 'PHPExcel-1.8.0/Classes/PHPExcel/Writer/Ex
 
 <h3 style="border-bottom: 1px solid black;">Import data from OALM</h3>
 <p>Export file from OALM Must contain at least the following columns:<br>
-BSA ID, Max Dues Year, Dues Paid Date, Level, Reg. Audit Result<br>
+BSA ID, Max Dues Year, Dues Paid Date, Level, Reg. Audit Date, Reg. Audit Result<br>
 Any additional columns will be ignored.</p>
+<p><a href="http://github.com/justdave/oadueslookup/wiki">How to create the export file in OALM</a></p>
 <form action="" method="post" enctype="multipart/form-data">
 <label for="oalm_file">Click Browse, then select the xlsx file exported from OALM's "Export Members", then click "Upload":</label><br>
 <input type="file" name="oalm_file" id="oalm_file" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">

@@ -27,6 +27,12 @@ https://github.com/PHPOffice/PHPExcel
 1. Go to "OA Dues Lookup" under "Settings" to find the settings and to upload data.
 
 == Changelog ==  
+= 1.0.2 =
+* Trim spaces around submitted BSA Member IDs
+* Use the correct URL from the Wordpress config for the part in front of the
+  Dues Page Slug on the admin page
+* Fix description for "No Match Found" audit status not showing up
+
 = 1.0.1 =  
 * fix a conflict with some themes
 

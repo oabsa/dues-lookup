@@ -4,8 +4,8 @@ Tags: order of the arrow, BSA, OA, dues, boy scouts
 Requires at least: 3.0.1  
 Tested up to: 3.8.2  
 Stable tag: trunk  
-License: MIT  
-License URI: http://opensource.org/licenses/MIT
+License: GPLv2 or later  
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 Wordpress plugin to use in conjunction with OA LodgeMaster to allow members to look up when they last paid dues
 
@@ -17,7 +17,7 @@ Makes use of data exported from OA LodgeMaster, which needs to be periodically i
 See the Github page for detailed instructions and to file bug reports.  
 https://github.com/justdave/oadueslookup/wiki
 
-This plugin embeds the PHPExcel library intact with no modifications, which is licensed LGPL and not included under the MIT license.  PHPExcel can be found at
+This plugin embeds the PHPExcel library intact with no modifications, which is licensed separately under LGPL.  PHPExcel can be found at
 https://github.com/PHPOffice/PHPExcel
 
 == Installation ==  
@@ -27,7 +27,10 @@ https://github.com/PHPOffice/PHPExcel
 1. Go to "OA Dues Lookup" under "Settings" to find the settings and to upload data.
 
 == Changelog ==  
-= 1.0.2 =
+= 1.0.3 =  
+* Relicensed to GPL to allow using GPL libraries
+
+= 1.0.2 =  
 * Trim spaces around submitted BSA Member IDs
 * Use the correct URL from the Wordpress config for the part in front of the
   Dues Page Slug on the admin page

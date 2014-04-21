@@ -159,6 +159,7 @@ function oadueslookup_update_db_check() {
     add_option('oadueslookup_dues_url', 'http://www.example.tld/paydues');
     add_option('oadueslookup_help_email', 'duesadmin@example.tld');
     add_option('oadueslookup_last_import', '1900-01-01');
+    add_option('oadueslookup_last_update', '1900-01-01');
 }
 
 function oadueslookup_insert_sample_data() {
@@ -174,7 +175,7 @@ function oadueslookup_insert_sample_data() {
         "('123457','2014',         '2013-12-18',   'Brotherhood','1900-01-01',   'No Match Found'), " .
         "('123458','2013',         '2013-03-15',   'Vigil',      '1900-01-01',   'Not Registered'), " .
         "('123459','2015',         '2014-03-15',   'Ordeal',     '" .
-                            esc_sql(get_option('oadueslookup_last_import')) . "','')"
+                            esc_sql(get_option('oadueslookup_last_update')) . "','')"
     );
 }
 
@@ -302,7 +303,7 @@ your status has updated.</p>
                 </table><?php
             }
 ?><br><p>Feel free to contact <a href="mailto:<?php echo htmlspecialchars(get_option('oadueslookup_help_email')) ?>?subject=Dues+question"><?php echo htmlspecialchars(get_option('oadueslookup_help_email')) ?></a> with any questions.</p>
-<p><b>Database last updated:</b> <?php esc_html_e(get_option('oadueslookup_last_import')) ?></p>
+<p><b>Database last updated:</b> <?php esc_html_e(get_option('oadueslookup_last_update')) ?></p>
 <br><br><br>
 <p>Check another BSA Member ID:</p>
 <form method="POST" action="">
@@ -506,6 +507,7 @@ if (isset($_FILES['oalm_file'])) {
                             <?php echo $error_output ?>
                             </div><?php
                         }
+                        update_option('oadueslookup_last_update', $wpdb->get_var("SELECT DATE_FORMAT(MAX(dues_paid_date), '%Y-%m-%d') FROM ${dbprefix}dues_data"));
                         break;
                     }
                     $columnName = $objWorksheet->getCell($cell->getColumn() . "1")->getValue();
@@ -622,7 +624,12 @@ Any additional columns will be ignored.</p>
 <form action="" method="post" enctype="multipart/form-data">
 <label for="oalm_file">Click Browse, then select the xlsx file exported from OALM's "Export Members", then click "Upload":</label><br>
 <input type="file" name="oalm_file" id="oalm_file" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
-<input type="submit" class="button button-primary" name="submit" value="Upload">
+<input type="submit" class="button button-primary" name="submit" value="Upload"><br>
+<p><b>Last import:</b> <?php 
+    $last_import = get_option('oadueslookup_last_import');
+    if ($last_import == '1900-01-01') { echo "Never"; }
+    else { esc_html_e($last_import); }
+?></p>
 </form>
 <h3 style="border-bottom: 1px solid black;">Lookup Page Settings</h3>
 <form name="oadueslookup-settings" method="post" action="">

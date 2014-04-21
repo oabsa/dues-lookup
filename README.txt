@@ -29,6 +29,9 @@ https://github.com/PHPOffice/PHPExcel
 == Changelog ==  
 = 1.0.3 =  
 * Relicensed to GPL to allow using GPL libraries
+* Hook up plugin update system so Wordpress will tell you when there's a new version
+* Show most-recently-recorded dues payment as the "Database Updated" date shown to end users, to avoid having data exported from OALM after a dues payment that hasn't been recorded in OALM yet has been made causing it to look like a dues payment got lost.
+* Make online dues payment link say "Click here" so people realize it's a link.
 
 = 1.0.2 =  
 * Trim spaces around submitted BSA Member IDs

@@ -235,7 +235,7 @@ your status has updated.</p>
                 } else {
                     ?><span class="oalm_dues_bad">Your dues are not current.</span><?php
                     if (($reg_audit_result != "Not Registered") && ($reg_audit_result != "No Match Found")) {
-                        ?><br><a href="<?php echo htmlspecialchars(get_option('oadueslookup_dues_url')) ?>">Pay your dues online.</a><?php
+                        ?><br><a href="<?php echo htmlspecialchars(get_option('oadueslookup_dues_url')) ?>">Click here to pay your dues online.</a><?php
                     }
                 }
 ?></td></tr>

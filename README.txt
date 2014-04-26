@@ -27,6 +27,10 @@ https://github.com/PHPOffice/PHPExcel
 1. Go to "OA Dues Lookup" under "Settings" to find the settings and to upload data.
 
 == Changelog ==  
+= 1.0.4 =  
+* Use the import date for the "registration audit date" in the sample data when creating/recreating it
+* Add the contact info update link to the initial lookup page
+
 = 1.0.3 =  
 * Relicensed to GPL to allow using GPL libraries
 * Hook up plugin update system so Wordpress will tell you when there's a new version

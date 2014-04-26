@@ -204,7 +204,7 @@ function oadueslookup_user_page( &$wp ) {
 <li>You mistyped your ID</li>
 <li>You are not a member of the lodge.</li>
 <li>You have never paid dues.</li>
-<li>(most likely) We don't have your BSA Member ID on your record or have the
+<li><b>(most likely)</b> We don't have your BSA Member ID on your record or have the
 incorrect ID on your record.</li>
 </ul>
 <p>You should fill out the "Update Contact Information Only" option on the <a
@@ -320,7 +320,7 @@ your status has updated.</p>
 <?php
     } else {
 ?>
-<p>Enter your BSA Member ID to check your current dues status.</p>
+<p>Enter your BSA Member ID to check your current dues status or pay your dues.</p>
 <form method="POST" action="">
 <label for="bsaid">BSA Member ID:</label> <input id="bsaid" name="bsaid" type="text" size="9">
 <input type="submit" value="Go">
@@ -329,6 +329,7 @@ your status has updated.</p>
 <p>You can find your Member ID at the bottom of your blue BSA Membership card:</p>
 <p><img src="<?php echo plugins_url("BSAMemberCard.png", __FILE__) ?>" alt="Membership Card" style="border: 1px solid #ccc;"></p>
 <p>If you can't find your membership card, your unit committee chairperson should be able to look it up on your unit recharter document, or your advancement chairperson can look it up in the Online Advancement System.</p>
+<p>If you just came here to update your contact information, <a href="<?php echo htmlspecialchars(get_option('oadueslookup_dues_url')) ?>">click here</a>.</p>
 <?php
     }
     return ob_get_clean();

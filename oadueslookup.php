@@ -203,7 +203,6 @@ function oadueslookup_user_page( &$wp ) {
 <ul>
 <li>You mistyped your ID</li>
 <li>You are not a member of the lodge.</li>
-<li>You have never paid dues.</li>
 <li><b>(most likely)</b> We don't have your BSA Member ID on your record or have the
 incorrect ID on your record.</li>
 </ul>

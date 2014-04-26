@@ -174,9 +174,9 @@ function oadueslookup_insert_sample_data() {
         "('123456','2013',         '2013-07-15',   'Ordeal',     '1900-01-01',   'Registered'), " .
         "('123457','2014',         '2013-12-18',   'Brotherhood','1900-01-01',   'No Match Found'), " .
         "('123458','2013',         '2013-03-15',   'Vigil',      '1900-01-01',   'Not Registered'), " .
-        "('123459','2015',         '2014-03-15',   'Ordeal',     '" .
-                            esc_sql(get_option('oadueslookup_last_update')) . "','')"
+        "('123459','2015',         '2014-03-15',   'Ordeal',     '1900-01-01',   '')"
     );
+    $wpdb->query($wpdb->prepare("UPDATE ${dbprefix}dues_data SET reg_audit_date=%s", get_option('oadueslookup_last_update')));
 }
 
 function oadueslookup_install_data() {

@@ -234,24 +234,18 @@ your status has updated.</p>
                 } else {
                     ?><span class="oalm_dues_bad">Your dues are not current.</span><?php
                     if (($reg_audit_result != "Not Registered") && ($reg_audit_result != "No Match Found")) {
-                        ?><br><a href="<?php echo htmlspecialchars(get_option('oadueslookup_dues_url')) ?>">Click here to pay your dues online.</a><?php
+                        ?><br><a href="<?php echo htmlspecialchars(get_option('oadueslookup_dues_url')) ?>">Click here to pay your dues online.</a>
+                            <p><b>NOTE:</b> If you already made a payment more recently than <?php esc_html_e(get_option('oadueslookup_last_update')) ?> it is not yet reflected here.</p><?php
                     }
                 }
 ?></td></tr>
 <tr><th>Last Dues Payment</th><td class="oalm_value"><?php echo htmlspecialchars($dues_paid_date) ?></td><td class="oalm_desc"></td></tr>
 <tr><th>Your current honor/level</th><td class="oalm_value"><?php echo htmlspecialchars($level) ?></td><td class="oalm_desc"></td></tr>
-<tr><th>BSA Membership Status</th><td class="oalm_value"><?php echo esc_html($reg_audit_result); if ($reg_audit_result != 'Registered') { echo "<br>as of<br>" . esc_html($reg_audit_date); } ?></td><td class="oalm_desc" style="text-align: left;"><?php
+<tr><th>BSA Membership Status</th><td class="oalm_value"><?php esc_html_e($reg_audit_result) ?></td><td class="oalm_desc" style="text-align: left;"><?php
                 switch ($reg_audit_result) {
                     case "Registered":
                         ?><span class="oalm_dues_good">You are currently an
                         active member of a Scouting unit.</span><br><?php
-                        if ($max_dues_year >= $thedate['year']) {
-                            ?>Your OA membership is thus valid.<?php
-                        } else {
-                            ?><span class="oalm_dues_bad">However, your OA
-                            membership is not current because your dues are not
-                            paid up. (see above)</span><?php
-                        }
                         break;
                     case "Not Registered":
                         ?><span class="oalm_dues_bad">Your BSA registration has
@@ -266,11 +260,14 @@ your status has updated.</p>
                         council. If you are a member of more than one unit,
                         please check with all of them, as only the "primary"
                         unit counts, and it's not always clear which one is
-                        primary.<?php
+                        primary.<br><br>We last checked your status in the
+                        BSA database on <?php esc_html_e($reg_audit_date);
                         break;
                     case "No Match Found":
                         ?><span class="oalm_dues_bad">Our most recent audit
-                        could not find you in the BSA database.</span><br>This
+                        could not find you in the BSA database.</span><br>We
+                        last attempted to find you on <?php
+                        esc_html_e($reg_audit_date) ?>.<br><br>This
                         almost always means the information we have on file for
                         you does not match what is on your unit's official
                         roster.  We must be able to verify your BSA membership
@@ -278,11 +275,11 @@ your status has updated.</p>
                         with your unit committee chairperson or advancement
                         chairperson to verify how they have you listed on the
                         unit roster.  The items which matter are:<ol><li>the
-                        spelling and spacing of your last name,</li><li>your
-                        birth date,</li><li>your gender, and</li><li>your BSA
-                        Member ID.</li></ol>Once you've verified this
-                        information, please submit it to us by using the
-                        "Update Contact Information" option on the <a
+                        spelling, spacing, and punctuation of your last
+                        name,</li><li>your birth date,</li><li>your gender,
+                        and</li><li>your BSA Member ID.</li></ol>Once you've
+                        verified this information, please submit it to us by
+                        using the "Update Contact Information" option on the <a
                         href="<?php echo
                         htmlspecialchars(get_option('oadueslookup_dues_url')) ?>">dues
                         form.</a><?php

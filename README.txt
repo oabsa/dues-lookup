@@ -15,7 +15,7 @@ Provides a lookup form to allow OA members to enter their BSA Member ID and find
 Makes use of data exported from OA LodgeMaster, which needs to be periodically imported into the plugin.
 
 See the Github page for detailed instructions and to file bug reports.  
-https://github.com/justdave/oadueslookup/wiki
+https://github.com/oa-bsa/dues-lookup/wiki
 
 This plugin embeds the PHPExcel library intact with no modifications, which is licensed separately under LGPL.  PHPExcel can be found at
 https://github.com/PHPOffice/PHPExcel

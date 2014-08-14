@@ -1,9 +1,9 @@
 <?php
 /*
  * Plugin Name: OA Dues Lookup
- * Plugin URI: https://github.com/justdave/oadueslookup
+ * Plugin URI: https://github.com/oa-bsa/dues-lookup/
  * Description: Wordpress plugin to use in conjunction with OA LodgeMaster to allow members to look up when they last paid dues
- * Version: 1.0.5
+ * Version: 1.0.6
  * Author: Dave Miller
  * Author URI: http://twitter.com/justdavemiller
  * Author Email: github@justdave.net
@@ -439,13 +439,13 @@ if (isset($_FILES['oalm_file'])) {
 
         $objReader = new PHPExcel_Reader_Excel2007();
         $objReader->setReadDataOnly(true);
-        $objReader->setLoadSheetsOnly( array("Sheet") );
+        $objReader->setLoadSheetsOnly( array("All") );
         $objPHPExcel = $objReader->load($_FILES["oalm_file"]["tmp_name"]);
         $objWorksheet = $objPHPExcel->getActiveSheet();
         $columnMap = array(
             'BSA ID'            => 'bsaid',
-            'Max Dues Year'     => 'max_dues_year',
-            'Dues Paid Date'    => 'dues_paid_date',
+            'Dues Yr.'          => 'max_dues_year',
+            'Dues Pd. Dt.'      => 'dues_paid_date',
             'Level'             => 'level',
             'Reg. Audit Date'   => 'reg_audit_date',
             'Reg. Audit Result' => 'reg_audit_result',
@@ -493,23 +493,9 @@ if (isset($_FILES['oalm_file'])) {
                 $cellIterator = $row->getCellIterator();
                 $cellIterator->setIterateOnlyExistingCells(FALSE);
                 foreach ($cellIterator as $cell) {
-                    if (($cell->getColumn() == "A") && (preg_match("/^Count=/", $cell->getValue()))) {
-                        $complete = 1;
-                        $error_output = ob_get_clean();
-                        if (!$error_output) {
-                        ?><div class="updated"><p><strong>Import successful. Imported <?php esc_html_e($recordcount) ?> records.</strong></p></div><?php
-                        } else {
-                            ?><div class="error"><p><strong>Import partially successful. Imported <?php esc_html_e($recordcount) ?> of <?php esc_html_e($row->getRowIndex() - 2) ?> records.</strong></p>
-                            <p>Errors follow:</p>
-                            <?php echo $error_output ?>
-                            </div><?php
-                        }
-                        update_option('oadueslookup_last_update', $wpdb->get_var("SELECT DATE_FORMAT(MAX(dues_paid_date), '%Y-%m-%d') FROM ${dbprefix}dues_data"));
-                        break;
-                    }
                     $columnName = $objWorksheet->getCell($cell->getColumn() . "1")->getValue();
                     $value = "";
-                    if ($columnName == "Dues Paid Date") {
+                    if ($columnName == "Dues Pd. Dt.") {
                         # this is a date field, and we have to work miracles to turn it into a mysql-compatible date
                         $date = $cell->getValue();
                         $dateint = intval($date);
@@ -532,22 +518,21 @@ if (isset($_FILES['oalm_file'])) {
                         $rowData[$columnMap[$columnName]] = $value;
                     }
                 }
-                if (!$complete) {
-                    if ($wpdb->insert($dbprefix . "dues_data", $rowData, array('%s','%s','%s','%s','%s'))) {
-                        $recordcount++;
-                    }
+                if ($wpdb->insert($dbprefix . "dues_data", $rowData, array('%s','%s','%s','%s','%s'))) {
+                    $recordcount++;
                 }
             }
         }
-        if (!$complete) {
-            $error_output = ob_get_clean();
-            ?><div class="error"><p><strong>Import may have failed.</strong></p><p>Imported <?php esc_html_e($recordcount) ?> records, but end of file marker from OALM was not reached.</p><?php
-            if ($error_output) {
-                ?><p>Errors follow:</p>
-                <?php echo $error_output;
-            }
-            ?></div><?php
+        $error_output = ob_get_clean();
+        if (!$error_output) {
+            ?><div class="updated"><p><strong>Import successful. Imported <?php esc_html_e($recordcount) ?> records.</strong></p></div><?php
+        } else {
+            ?><div class="error"><p><strong>Import partially successful. Imported <?php esc_html_e($recordcount) ?> of <?php esc_html_e($row->getRowIndex() - 2) ?> records.</strong></p>
+            <p>Errors follow:</p>
+            <?php echo $error_output ?>
+            </div><?php
         }
+        update_option('oadueslookup_last_update', $wpdb->get_var("SELECT DATE_FORMAT(MAX(dues_paid_date), '%Y-%m-%d') FROM ${dbprefix}dues_data"));
     } else {
         ?><div class="error"><p><strong>Invalid file upload.</strong> Not an XLSX file.</p></div><?php
     }
@@ -615,7 +600,7 @@ if (isset($_FILES['oalm_file'])) {
 
 <h3 style="border-bottom: 1px solid black;">Import data from OALM</h3>
 <p>Export file from OALM Must contain at least the following columns:<br>
-BSA ID, Max Dues Year, Dues Paid Date, Level, Reg. Audit Date, Reg. Audit Result<br>
+BSA ID, Dues Yr., Dues Pd. Dt., Level, Reg. Audit Date, Reg. Audit Result<br>
 Any additional columns will be ignored.</p>
 <p><a href="http://github.com/justdave/oadueslookup/wiki">How to create the export file in OALM</a></p>
 <form action="" method="post" enctype="multipart/form-data">

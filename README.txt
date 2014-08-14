@@ -1,8 +1,8 @@
 === OA Dues Lookup ===  
-Contributors: Dave Miller  
+Contributors: Dave Miller, Steven Hall  
 Tags: order of the arrow, BSA, OA, dues, boy scouts  
 Requires at least: 3.0.1  
-Tested up to: 3.8.2  
+Tested up to: 3.9.2  
 Stable tag: trunk  
 License: GPLv2 or later  
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -27,6 +27,12 @@ https://github.com/PHPOffice/PHPExcel
 1. Go to "OA Dues Lookup" under "Settings" to find the settings and to upload data.
 
 == Changelog ==  
+= 1.0.6 =  
+* Fix XLSX import to address export format changes in OA LodgeMaster 3.3.0.
+  Make sure to check the "How to export" instructions on the wiki (linked from
+  the admin page where you upload) as the export instructions from OALM have
+  changed as well.
+
 = 1.0.5 =  
 * Tweaks to the results text to be more friendly.
 

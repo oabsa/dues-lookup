@@ -206,10 +206,10 @@ function oadueslookup_user_page( &$wp ) {
 <li><b>(most likely)</b> We don't have your BSA Member ID on your record or have the
 incorrect ID on your record.</li>
 </ul>
-<p>You should fill out the "Update Contact Information Only" option on the <a
-href="<?php echo get_option('oadueslookup_dues_url') ?>">Dues Form</a> and make sure to
-supply your BSA Member ID on the form, then check back here in a week to see if
-your status has updated.</p>
+<p>We currently have BSA Member IDs on file and verified as correctly matching your name
+via the council records for everyone whose dues are current, so if your ID wasn't found
+and you're sure you typed it correctly, then your dues are not current, and you should
+pay them at <a href="<?php echo get_option('oadueslookup_dues_url') ?>">Dues Form</a>.</p>
 <?php
             } else {
                 $max_dues_year = $results->max_dues_year;

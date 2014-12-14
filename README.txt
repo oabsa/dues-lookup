@@ -1,8 +1,8 @@
 === OA Dues Lookup ===  
-Contributors: Dave Miller, Steven Hall  
+Contributors: Dave Miller, Steven Hall, Eric Silva
 Tags: order of the arrow, BSA, OA, dues, boy scouts  
 Requires at least: 3.0.1  
-Tested up to: 3.9.2  
+Tested up to: 4.0.1
 Stable tag: trunk  
 License: GPLv2 or later  
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -26,7 +26,11 @@ https://github.com/PHPOffice/PHPExcel
 1. Activate the plugin through the "Plugins" menu in WordPress.
 1. Go to "OA Dues Lookup" under "Settings" to find the settings and to upload data.
 
-== Changelog ==  
+== Changelog ==
+= 1.0.7 =
+* Added separate Update Contact Information URL to add flexibility to other lodge's workflows.
+* Replaced `<b>` elements with `<strong>` elements
+
 = 1.0.6 =  
 * Fix XLSX import to address export format changes in OA LodgeMaster 3.3.0.
   Make sure to check the "How to export" instructions on the wiki (linked from

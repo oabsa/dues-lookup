@@ -27,6 +27,7 @@ https://github.com/PHPOffice/PHPExcel
 1. Go to "OA Dues Lookup" under "Settings" to find the settings and to upload data.
 
 == Changelog ==
+
 = 1.0.7 =
 * Added separate Update Contact Information URL to add flexibility to other lodge's workflows.
 * Replaced `<b>` elements with `<strong>` elements

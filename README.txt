@@ -31,7 +31,8 @@ https://github.com/PHPOffice/PHPExcel
 = 1.0.7 =
 * Added option to include instructions for having to register before paying dues.
 * Added separate Update Contact Information URL to add flexibility to other lodge's workflows.
-* Replaced `<b>` elements with `<strong>` elements
+* Replaced `<b>` elements with `<strong>` elements.
+* Added message with last updated date to the "ID Not Found" response.
 
 = 1.0.6 =  
 * Fix XLSX import to address export format changes in OA LodgeMaster 3.3.0.

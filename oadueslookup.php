@@ -594,6 +594,7 @@ if (isset($_FILES['oalm_file'])) {
                 $foundchanges = 1;
             }
 
+            $help_email = sanitize_email($help_email);
             if ($help_email != get_option('oadueslookup_help_email')) {
                 update_option('oadueslookup_help_email', $help_email);
                 $foundchanges = 1;

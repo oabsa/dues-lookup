@@ -229,7 +229,7 @@ pay them at <a href="<?php echo get_option('oadueslookup_dues_url') ?>">Dues For
                 if ($max_dues_year >= $thedate['year']) {
                     ?><span class="oalm_dues_good">Your dues are current.</span><?php
                     if (($reg_audit_result == "Not Registered") || ($reg_audit_result == "No Match Found")) {
-                        ?><br/><span class="oalm_dues_bad">However, your OA
+                        ?><br><span class="oalm_dues_bad">However, your OA
                         membership is not currently valid because we could not
                         verify your BSA Membership status (see
                         below)</span><?php
@@ -237,7 +237,7 @@ pay them at <a href="<?php echo get_option('oadueslookup_dues_url') ?>">Dues For
                 } else {
                     ?><span class="oalm_dues_bad">Your dues are not current.</span><?php
                     if (($reg_audit_result != "Not Registered") && ($reg_audit_result != "No Match Found")) {
-                        ?><br/><a href="<?php echo htmlspecialchars(get_option('oadueslookup_dues_url')) ?>">Click here to pay your dues online.</a>
+                        ?><br><a href="<?php echo htmlspecialchars(get_option('oadueslookup_dues_url')) ?>">Click here to pay your dues online.</a>
                             <p><strong>NOTE:</strong> If you already made a payment more recently than <?php esc_html_e(get_option('oadueslookup_last_update')) ?> it is not yet reflected here.</p><?php
                     }
                 }
@@ -248,13 +248,13 @@ pay them at <a href="<?php echo get_option('oadueslookup_dues_url') ?>">Dues For
                 switch ($reg_audit_result) {
                     case "Registered":
                         ?><span class="oalm_dues_good">You are currently an
-                        active member of a Scouting unit.</span><br/><?php
+                        active member of a Scouting unit.</span><br><?php
                         break;
                     case "Not Registered":
                         ?><span class="oalm_dues_bad">Your BSA registration has
                         expired, which means you are no longer listed as a
                         registered member of any Scouting unit, and also cannot
-                        be a member of the OA.</span><br/>You will need to join
+                        be a member of the OA.</span><br>You will need to join
                         a Scouting unit (troop, pack, crew, district, etc)
                         before you may renew your OA Membership. If you
                         <strong>are</strong> currently a member of a Scouting unit,
@@ -263,14 +263,14 @@ pay them at <a href="<?php echo get_option('oadueslookup_dues_url') ?>">Dues For
                         council. If you are a member of more than one unit,
                         please check with all of them, as only the "primary"
                         unit counts, and it's not always clear which one is
-                        primary.<br/><br/>We last checked your status in the
+                        primary.<br><br>We last checked your status in the
                         BSA database on <?php esc_html_e($reg_audit_date);
                         break;
                     case "No Match Found":
                         ?><span class="oalm_dues_bad">Our most recent audit
-                        could not find you in the BSA database.</span><br/>We
+                        could not find you in the BSA database.</span><br>We
                         last attempted to find you on <?php
-                        esc_html_e($reg_audit_date) ?>.<br/><br/>This
+                        esc_html_e($reg_audit_date) ?>.<br><br>This
                         almost always means the information we have on file for
                         you does not match what is on your unit's official
                         roster.  We must be able to verify your BSA membership
@@ -303,9 +303,9 @@ pay them at <a href="<?php echo get_option('oadueslookup_dues_url') ?>">Dues For
                 ?></td></tr>
                 </table><?php
             }
-?><br/><p>Feel free to contact <a href="mailto:<?php echo htmlspecialchars(get_option('oadueslookup_help_email')) ?>?subject=Dues+question"><?php echo htmlspecialchars(get_option('oadueslookup_help_email')) ?></a> with any questions.</p>
+?><br><p>Feel free to contact <a href="mailto:<?php echo htmlspecialchars(get_option('oadueslookup_help_email')) ?>?subject=Dues+question"><?php echo htmlspecialchars(get_option('oadueslookup_help_email')) ?></a> with any questions.</p>
 <p><strong>Database last updated:</strong> <?php esc_html_e(get_option('oadueslookup_last_update')) ?></p>
-<br/><br/>
+<br><br>
 <p>Check another BSA Member ID:</p>
 <form method="POST" action="">
 <label for="bsaid">BSA Member ID:</label> <input id="bsaid" name="bsaid" type="text" size="9">
@@ -326,7 +326,7 @@ pay them at <a href="<?php echo get_option('oadueslookup_dues_url') ?>">Dues For
 <label for="bsaid">BSA Member ID:</label> <input id="bsaid" name="bsaid" type="text" size="9">
 <input type="submit" value="Go">
 </form>
-<br/>
+<br>
 <p>You can find your Member ID at the bottom of your blue BSA Membership card:</p>
 <p><img src="<?php echo plugins_url("BSAMemberCard.png", __FILE__) ?>" alt="Membership Card" style="border: 1px solid #ccc;"></p>
 <p>If you can't find your membership card, your unit committee chairperson should be able to look it up on your unit recharter document, or your advancement chairperson can look it up in the Online Advancement System.</p>
@@ -432,8 +432,8 @@ function oadueslookup_options() {
 
 if (isset($_FILES['oalm_file'])) {
     #echo "<h3>Processing file upload</h3>";
-    #echo "<strong>Processing File:</strong> " . esc_html($_FILES['oalm_file']['name']) . "<br/>";
-    #echo "<strong>Type:</strong> " . esc_html($_FILES['oalm_file']['type']) . "<br/>";
+    #echo "<strong>Processing File:</strong> " . esc_html($_FILES['oalm_file']['name']) . "<br>";
+    #echo "<strong>Type:</strong> " . esc_html($_FILES['oalm_file']['type']) . "<br>";
     if (preg_match('/\.xlsx$/',$_FILES['oalm_file']['name'])) {
 
         /** PHPExcel */
@@ -468,9 +468,9 @@ if (isset($_FILES['oalm_file'])) {
                     $cellValue = $cell->getValue();
                     if (isset($columnMap[$cellValue])) {
                         $rowData[$columnMap[$cellValue]] = 1;
-                        #echo "Found column " . htmlspecialchars($cell->getColumn()) . " with title '" . htmlspecialchars($cellValue) . "'<br/>" . PHP_EOL;
+                        #echo "Found column " . htmlspecialchars($cell->getColumn()) . " with title '" . htmlspecialchars($cellValue) . "'<br>" . PHP_EOL;
                     } else {
-                        #echo "Discarding unknown column " . htmlspecialchars($cell->getColumn()) . " with title '" . htmlspecialchars($cellValue) . "'<br/>" . PHP_EOL;
+                        #echo "Discarding unknown column " . htmlspecialchars($cell->getColumn()) . " with title '" . htmlspecialchars($cellValue) . "'<br>" . PHP_EOL;
                     }
                 }
                 $missingColumns = array();
@@ -484,7 +484,7 @@ if (isset($_FILES['oalm_file'])) {
                     $complete = 1; # Don't show "may have failed" box at the bottom
                     break;
                 } else {
-                    #echo "<strong>Data format validated:</strong> Importing new data...<br/>" . PHP_EOL;
+                    #echo "<strong>Data format validated:</strong> Importing new data...<br>" . PHP_EOL;
                     # we just validated that we have a good data file, nuke the existing data
                     $wpdb->show_errors();
                     ob_start();
@@ -626,14 +626,14 @@ if (isset($_FILES['oalm_file'])) {
 ?>
 
 <h3 class="oalm">Import data from OALM</h3>
-<p>Export file from OALM Must contain at least the following columns:<br/>
-BSA ID, Dues Yr., Dues Pd. Dt., Level, Reg. Audit Date, Reg. Audit Result<br/>
+<p>Export file from OALM Must contain at least the following columns:<br>
+BSA ID, Dues Yr., Dues Pd. Dt., Level, Reg. Audit Date, Reg. Audit Result<br>
 Any additional columns will be ignored.</p>
 <p><a href="http://github.com/justdave/oadueslookup/wiki">How to create the export file in OALM</a></p>
 <form action="" method="post" enctype="multipart/form-data">
-<label for="oalm_file">Click Browse, then select the xlsx file exported from OALM's "Export Members", then click "Upload":</label><br/>
+<label for="oalm_file">Click Browse, then select the xlsx file exported from OALM's "Export Members", then click "Upload":</label><br>
 <input type="file" name="oalm_file" id="oalm_file" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
-<input type="submit" class="button button-primary" name="submit" value="Upload"><br/>
+<input type="submit" class="button button-primary" name="submit" value="Upload"><br>
 <p><strong>Last import:</strong> <?php 
     $last_import = get_option('oadueslookup_last_import');
     if ($last_import == '1900-01-01') { echo "Never"; }

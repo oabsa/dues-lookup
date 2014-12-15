@@ -29,6 +29,7 @@ https://github.com/PHPOffice/PHPExcel
 == Changelog ==
 
 = 1.0.7 =
+* Added option to include instructions for having to register before paying dues.
 * Added separate Update Contact Information URL to add flexibility to other lodge's workflows.
 * Replaced `<b>` elements with `<strong>` elements
 

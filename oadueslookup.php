@@ -157,6 +157,8 @@ function oadueslookup_update_db_check() {
     # already exists, sets default value if it does not.
     add_option('oadueslookup_slug', 'oadueslookup');
     add_option('oadueslookup_dues_url', 'http://www.example.tld/paydues');
+    add_option('oadueslookup_dues_register', '1');
+    add_option('oadueslookup_dues_register_msg', 'You must register and login on the MyCouncil site before paying dues.');
     add_option('oadueslookup_update_url', 'http://www.example.tld/paydues');
     add_option('oadueslookup_update_option_text', 'Update Contact Information');
     add_option('oadueslookup_update_option_link_text', 'dues form');
@@ -212,8 +214,11 @@ incorrect ID on your record.</li>
 <p>We currently have BSA Member IDs on file and verified as correctly matching your name
 via the council records for everyone whose dues are current, so if your ID wasn't found
 and you're sure you typed it correctly, then your dues are not current, and you should
-pay them at <a href="<?php echo get_option('oadueslookup_dues_url') ?>">Dues Form</a>.</p>
+pay them <a href="<?php echo get_option('oadueslookup_dues_url') ?>">here</a>.</p>
 <?php
+                if (get_option('oadueslookup_dues_register') == '1') {
+                    ?><p><strong>NOTE:</strong>  <?php esc_html_e(get_option('oadueslookup_dues_register_msg')) ?></p><?php
+                }
             } else {
                 $max_dues_year = $results->max_dues_year;
                 $dues_paid_date = $results->dues_paid_date;
@@ -239,6 +244,9 @@ pay them at <a href="<?php echo get_option('oadueslookup_dues_url') ?>">Dues For
                     if (($reg_audit_result != "Not Registered") && ($reg_audit_result != "No Match Found")) {
                         ?><br><a href="<?php echo htmlspecialchars(get_option('oadueslookup_dues_url')) ?>">Click here to pay your dues online.</a>
                             <p><strong>NOTE:</strong> If you already made a payment more recently than <?php esc_html_e(get_option('oadueslookup_last_update')) ?> it is not yet reflected here.</p><?php
+                    }
+                    if (get_option('oadueslookup_dues_register') == '1') {
+                        ?><p><strong>NOTE:</strong>  <?php esc_html_e(get_option('oadueslookup_dues_register_msg')) ?></p><?php
                     }
                 }
 ?></td></tr>
@@ -551,6 +559,8 @@ if (isset($_FILES['oalm_file'])) {
 
         $slug = $_POST['oadueslookup_slug'];
         $dues_url = $_POST['oadueslookup_dues_url'];
+        $dues_register = $_POST['oadueslookup_dues_register'];
+        $dues_register_msg = $_POST['oadueslookup_dues_register_msg'];
         $update_url = $_POST['oadueslookup_update_url'];
         $update_link_text = $_POST['oadueslookup_update_option_link_text'];
         $update_option_text = $_POST['oadueslookup_update_option_text'];
@@ -576,19 +586,30 @@ if (isset($_FILES['oalm_file'])) {
                 $foundchanges = 1;
             }
 
+            if ($dues_register != get_option('oadueslookup_dues_register')) {
+                update_option('oadueslookup_dues_register', $dues_register);
+                $foundchanges = 1;
+            }
+
+            $dues_register_msg = sanitize_text_field($dues_register_msg);
+            if ($dues_register_msg != get_option('oadueslookup_dues_register_msg')) {
+                update_option('oadueslookup_dues_register_msg', $dues_register_msg);
+                $foundchanges = 1;
+            }
+
             $update_url = esc_url_raw($update_url);
             if ($update_url != get_option('oadueslookup_update_url')) {
                 update_option('oadueslookup_update_url', $update_url);
                 $foundchanges = 1;
             }
 
-            $update_link_text = esc_url_raw($update_link_text);
+            $update_link_text = sanitize_text_field($update_link_text);
             if ($update_link_text != get_option('oadueslookup_update_option_link_text')) {
                 update_option('oadueslookup_update_option_link_text', $update_link_text);
                 $foundchanges = 1;
             }
 
-            $update_option_text = esc_url_raw($update_option_text);
+            $update_option_text = sanitize_text_field($update_option_text);
             if ($update_option_text != get_option('oadueslookup_update_option_text')) {
                 update_option('oadueslookup_update_option_text', $update_option_text);
                 $foundchanges = 1;
@@ -656,6 +677,18 @@ Any additional columns will be ignored.</p>
   <td><input id="oadueslookup_dues_url" name="oadueslookup_dues_url" class="regular-text code" type="text" value="<?php echo esc_html(get_option("oadueslookup_dues_url")); ?>">
   <p class="description">The URL to send members to for actually paying their dues.</p>
   </td>
+</tr>
+<tr>
+    <th scope="row"><label for="oadueslookup_dues_register">Registration Required?</label></th>
+    <td><input id="oadueslookup_dues_register" name="oadueslookup_dues_register" class="code" type="checkbox" value="1"<?php checked( 1 == esc_html(get_option('oadueslookup_dues_register'))); ?>">
+        <p class="description">Does the dues payment site require the user to register before paying?</p>
+    </td>
+</tr>
+<tr>
+    <th scope="row"><label for="oadueslookup_dues_register_msg">Registration Required Message</label></th>
+    <td><input id="oadueslookup_dues_register_msg" name="oadueslookup_dues_register_msg" class="regular-text code" type="text" value="<?php echo esc_html(get_option("oadueslookup_dues_register_msg")); ?>">
+        <p class="description">The instruction text to display informing the user that they need to register before paying dues.</p>
+    </td>
 </tr>
 <tr>
     <th scope="row"><label for="oadueslookup_update_url">Update Contact Info URL</label></th>

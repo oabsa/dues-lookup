@@ -29,6 +29,9 @@ https://github.com/PHPOffice/PHPExcel
 == Changelog ==
 
 = 1.0.7 =
+* Added Nataepu Shohpe-specific message that if your ID number wasn't found
+  either your dues aren't paid or we have your ID wrong, since we have
+  everyone's IDs now.  This really needs to be a config setting.
 * Added option to include instructions for having to register before paying dues.
 * Added separate Update Contact Information URL to add flexibility to other lodge's workflows.
 * Replaced `<b>` elements with `<strong>` elements.

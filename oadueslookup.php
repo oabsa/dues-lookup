@@ -211,6 +211,7 @@ function oadueslookup_user_page( &$wp ) {
 <li><strong>(most likely)</strong> We don't have your BSA Member ID on your record or have the
 incorrect ID on your record.</li>
 </ul>
+<p><strong>NOTE:</strong> If you already made a payment more recently than <?php esc_html_e(get_option('oadueslookup_last_update')) ?> it is not yet reflected here.</p>
 <p>We currently have BSA Member IDs on file and verified as correctly matching your name
 via the council records for everyone whose dues are current, so if your ID wasn't found
 and you're sure you typed it correctly, then your dues are not current, and you should

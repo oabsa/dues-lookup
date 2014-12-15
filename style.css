@@ -45,3 +45,6 @@
 .oalm_dues_bad {
   color: red;
 }
+h3.oalm {
+  border-bottom: 1px solid black;
+}

@@ -157,6 +157,9 @@ function oadueslookup_update_db_check() {
     # already exists, sets default value if it does not.
     add_option('oadueslookup_slug', 'oadueslookup');
     add_option('oadueslookup_dues_url', 'http://www.example.tld/paydues');
+    add_option('oadueslookup_update_url', 'http://www.example.tld/paydues');
+    add_option('oadueslookup_update_option_text', 'Update Contact Information');
+    add_option('oadueslookup_update_option_link_text', 'dues form');
     add_option('oadueslookup_help_email', 'duesadmin@example.tld');
     add_option('oadueslookup_last_import', '1900-01-01');
     add_option('oadueslookup_last_update', '1900-01-01');
@@ -203,7 +206,7 @@ function oadueslookup_user_page( &$wp ) {
 <ul>
 <li>You mistyped your ID</li>
 <li>You are not a member of the lodge.</li>
-<li><b>(most likely)</b> We don't have your BSA Member ID on your record or have the
+<li><strong>(most likely)</strong> We don't have your BSA Member ID on your record or have the
 incorrect ID on your record.</li>
 </ul>
 <p>We currently have BSA Member IDs on file and verified as correctly matching your name
@@ -235,7 +238,7 @@ pay them at <a href="<?php echo get_option('oadueslookup_dues_url') ?>">Dues For
                     ?><span class="oalm_dues_bad">Your dues are not current.</span><?php
                     if (($reg_audit_result != "Not Registered") && ($reg_audit_result != "No Match Found")) {
                         ?><br><a href="<?php echo htmlspecialchars(get_option('oadueslookup_dues_url')) ?>">Click here to pay your dues online.</a>
-                            <p><b>NOTE:</b> If you already made a payment more recently than <?php esc_html_e(get_option('oadueslookup_last_update')) ?> it is not yet reflected here.</p><?php
+                            <p><strong>NOTE:</strong> If you already made a payment more recently than <?php esc_html_e(get_option('oadueslookup_last_update')) ?> it is not yet reflected here.</p><?php
                     }
                 }
 ?></td></tr>
@@ -254,7 +257,7 @@ pay them at <a href="<?php echo get_option('oadueslookup_dues_url') ?>">Dues For
                         be a member of the OA.</span><br>You will need to join
                         a Scouting unit (troop, pack, crew, district, etc)
                         before you may renew your OA Membership. If you
-                        <b>are</b> currently a member of a Scouting unit,
+                        <strong>are</strong> currently a member of a Scouting unit,
                         please have your unit chairperson check to make sure
                         your registration has been properly submitted to the
                         council. If you are a member of more than one unit,
@@ -278,11 +281,13 @@ pay them at <a href="<?php echo get_option('oadueslookup_dues_url') ?>">Dues For
                         spelling, spacing, and punctuation of your last
                         name,</li><li>your birth date,</li><li>your gender,
                         and</li><li>your BSA Member ID.</li></ol>Once you've
-                        verified this information, please submit it to us by
-                        using the "Update Contact Information" option on the <a
-                        href="<?php echo
-                        htmlspecialchars(get_option('oadueslookup_dues_url')) ?>">dues
-                        form.</a><?php
+                        verified this information, please submit it to us by using the
+                        "<?php echo htmlspecialchars(get_option('oadueslookup_update_option_text')) ?>"
+                        option on the
+                        <a href="<?php echo htmlspecialchars(get_option('oadueslookup_update_url')) ?>">
+                            <?php echo htmlspecialchars(get_option('oadueslookup_update_option_link_text')) ?>
+                        </a>
+                        <?php
                         break;
                     case "Not Checked":
                         ?>This means one of the following things:<ul>
@@ -299,8 +304,8 @@ pay them at <a href="<?php echo get_option('oadueslookup_dues_url') ?>">Dues For
                 </table><?php
             }
 ?><br><p>Feel free to contact <a href="mailto:<?php echo htmlspecialchars(get_option('oadueslookup_help_email')) ?>?subject=Dues+question"><?php echo htmlspecialchars(get_option('oadueslookup_help_email')) ?></a> with any questions.</p>
-<p><b>Database last updated:</b> <?php esc_html_e(get_option('oadueslookup_last_update')) ?></p>
-<br><br><br>
+<p><strong>Database last updated:</strong> <?php esc_html_e(get_option('oadueslookup_last_update')) ?></p>
+<br><br>
 <p>Check another BSA Member ID:</p>
 <form method="POST" action="">
 <label for="bsaid">BSA Member ID:</label> <input id="bsaid" name="bsaid" type="text" size="9">
@@ -316,7 +321,7 @@ pay them at <a href="<?php echo get_option('oadueslookup_dues_url') ?>">Dues For
 <?php
     } else {
 ?>
-<p>Enter your BSA Member ID to check your current dues status or pay your dues.</p>
+<p>Enter your BSA Member ID to check your current dues status or <a href="<?php echo htmlspecialchars(get_option('oadueslookup_dues_url')) ?>">pay your dues</a>.</p>
 <form method="POST" action="">
 <label for="bsaid">BSA Member ID:</label> <input id="bsaid" name="bsaid" type="text" size="9">
 <input type="submit" value="Go">
@@ -325,7 +330,7 @@ pay them at <a href="<?php echo get_option('oadueslookup_dues_url') ?>">Dues For
 <p>You can find your Member ID at the bottom of your blue BSA Membership card:</p>
 <p><img src="<?php echo plugins_url("BSAMemberCard.png", __FILE__) ?>" alt="Membership Card" style="border: 1px solid #ccc;"></p>
 <p>If you can't find your membership card, your unit committee chairperson should be able to look it up on your unit recharter document, or your advancement chairperson can look it up in the Online Advancement System.</p>
-<p>If you just came here to update your contact information, <a href="<?php echo htmlspecialchars(get_option('oadueslookup_dues_url')) ?>">click here</a>.</p>
+<p>If you just came here to update your contact information, <a href="<?php echo htmlspecialchars(get_option('oadueslookup_update_url')) ?>">click here</a>.</p>
 <?php
     }
     return ob_get_clean();
@@ -427,8 +432,8 @@ function oadueslookup_options() {
 
 if (isset($_FILES['oalm_file'])) {
     #echo "<h3>Processing file upload</h3>";
-    #echo "<b>Processing File:</b> " . esc_html($_FILES['oalm_file']['name']) . "<br>";
-    #echo "<b>Type:</b> " . esc_html($_FILES['oalm_file']['type']) . "<br>";
+    #echo "<strong>Processing File:</strong> " . esc_html($_FILES['oalm_file']['name']) . "<br>";
+    #echo "<strong>Type:</strong> " . esc_html($_FILES['oalm_file']['type']) . "<br>";
     if (preg_match('/\.xlsx$/',$_FILES['oalm_file']['name'])) {
 
         /** PHPExcel */
@@ -479,7 +484,7 @@ if (isset($_FILES['oalm_file'])) {
                     $complete = 1; # Don't show "may have failed" box at the bottom
                     break;
                 } else {
-                    #echo "<b>Data format validated:</b> Importing new data...<br>" . PHP_EOL;
+                    #echo "<strong>Data format validated:</strong> Importing new data...<br>" . PHP_EOL;
                     # we just validated that we have a good data file, nuke the existing data
                     $wpdb->show_errors();
                     ob_start();
@@ -546,6 +551,9 @@ if (isset($_FILES['oalm_file'])) {
 
         $slug = $_POST['oadueslookup_slug'];
         $dues_url = $_POST['oadueslookup_dues_url'];
+        $update_url = $_POST['oadueslookup_update_url'];
+        $update_link_text = $_POST['oadueslookup_update_option_link_text'];
+        $update_option_text = $_POST['oadueslookup_update_option_text'];
         $help_email = $_POST['oadueslookup_help_email'];
 
         # $help_email is the only one that throws an error if it doesn't
@@ -568,6 +576,25 @@ if (isset($_FILES['oalm_file'])) {
                 $foundchanges = 1;
             }
 
+            $update_url = esc_url_raw($update_url);
+            if ($update_url != get_option('oadueslookup_update_url')) {
+                update_option('oadueslookup_update_url', $update_url);
+                $foundchanges = 1;
+            }
+
+            $update_link_text = esc_url_raw($update_link_text);
+            if ($update_link_text != get_option('oadueslookup_update_option_link_text')) {
+                update_option('oadueslookup_update_option_link_text', $update_link_text);
+                $foundchanges = 1;
+            }
+
+            $update_option_text = esc_url_raw($update_option_text);
+            if ($update_option_text != get_option('oadueslookup_update_option_text')) {
+                update_option('oadueslookup_update_option_text', $update_option_text);
+                $foundchanges = 1;
+            }
+
+            $help_email = sanitize_email($help_email);
             if ($help_email != get_option('oadueslookup_help_email')) {
                 update_option('oadueslookup_help_email', $help_email);
                 $foundchanges = 1;
@@ -598,7 +625,7 @@ if (isset($_FILES['oalm_file'])) {
 
 ?>
 
-<h3 style="border-bottom: 1px solid black;">Import data from OALM</h3>
+<h3 class="oalm">Import data from OALM</h3>
 <p>Export file from OALM Must contain at least the following columns:<br>
 BSA ID, Dues Yr., Dues Pd. Dt., Level, Reg. Audit Date, Reg. Audit Result<br>
 Any additional columns will be ignored.</p>
@@ -607,13 +634,13 @@ Any additional columns will be ignored.</p>
 <label for="oalm_file">Click Browse, then select the xlsx file exported from OALM's "Export Members", then click "Upload":</label><br>
 <input type="file" name="oalm_file" id="oalm_file" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
 <input type="submit" class="button button-primary" name="submit" value="Upload"><br>
-<p><b>Last import:</b> <?php 
+<p><strong>Last import:</strong> <?php 
     $last_import = get_option('oadueslookup_last_import');
     if ($last_import == '1900-01-01') { echo "Never"; }
     else { esc_html_e($last_import); }
 ?></p>
 </form>
-<h3 style="border-bottom: 1px solid black;">Lookup Page Settings</h3>
+<h3 class="oalm">Lookup Page Settings</h3>
 <form name="oadueslookup-settings" method="post" action="">
 <input type="hidden" name="<?php echo $hidden_field_name; ?>" value="oadueslookup-settings">
 <table class="form-table">
@@ -631,6 +658,24 @@ Any additional columns will be ignored.</p>
   </td>
 </tr>
 <tr>
+    <th scope="row"><label for="oadueslookup_update_url">Update Contact Info URL</label></th>
+    <td><input id="oadueslookup_update_url" name="oadueslookup_update_url" class="regular-text code" type="text" value="<?php echo esc_html(get_option("oadueslookup_update_url")); ?>">
+        <p class="description">The URL to send members to for updating their contact information.</p>
+    </td>
+</tr>
+<tr>
+    <th scope="row"><label for="oadueslookup_update_option_link_text">Update Contact Link Info Text</label></th>
+    <td><input id="oadueslookup_update_option_link_text" name="oadueslookup_update_option_link_text" class="regular-text code" type="text" value="<?php echo esc_html(get_option("oadueslookup_update_option_link_text")); ?>">
+        <p class="description">The text to appear in the hyperlink to the Update Contact Information URL.</p>
+    </td>
+</tr>
+<tr>
+    <th scope="row"><label for="oadueslookup_update_option_text">Section Label</label></th>
+    <td><input id="oadueslookup_update_option_text" name="oadueslookup_update_option_text" class="regular-text code" type="text" value="<?php echo esc_html(get_option("oadueslookup_update_option_text")); ?>">
+        <p class="description">The label or option on the Update Contact Information page to direct the user to.</p>
+    </td>
+</tr>
+<tr>
   <th scope="row"><label for="oadueslookup_help_email">Help Email</label></th>
   <td><input id="oadueslookup_help_email" name="oadueslookup_help_email" class="regular-text code" type="text" value="<?php echo esc_html(get_option("oadueslookup_help_email")); ?>">
   <p class="description">The email address for members to ask questions.</p>
@@ -644,4 +689,3 @@ Any additional columns will be ignored.</p>
 
     echo "</div>";
 } // END OF SETTINGS SCREEN
-

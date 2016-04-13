@@ -313,7 +313,7 @@ pay them <a href="<?php echo get_option('oadueslookup_dues_url') ?>">here</a>.</
                 </table><?php
             }
 ?><br><p>Feel free to contact <a href="mailto:<?php echo htmlspecialchars(get_option('oadueslookup_help_email')) ?>?subject=Dues+question"><?php echo htmlspecialchars(get_option('oadueslookup_help_email')) ?></a> with any questions.</p>
-<p><strong>Database last updated:</strong> <?php esc_html_e(get_option('oadueslookup_last_update')) ?></p>
+<p><strong>Database last updated:</strong> <?php esc_html_e(get_option('oadueslookup_last_import')) ?></p>
 <br><br>
 <p>Check another BSA Member ID:</p>
 <form method="POST" action="">

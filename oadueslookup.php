@@ -165,6 +165,7 @@ function oadueslookup_update_db_check() {
     add_option('oadueslookup_help_email', 'duesadmin@example.tld');
     add_option('oadueslookup_last_import', '1900-01-01');
     add_option('oadueslookup_last_update', '1900-01-01');
+    add_option('oadueslookup_max_dues_year', '2016');
 }
 
 function oadueslookup_insert_sample_data() {
@@ -239,6 +240,8 @@ pay them <a href="<?php echo get_option('oadueslookup_dues_url') ?>">here</a>.</
                         membership is not currently valid because we could not
                         verify your BSA Membership status (see
                         below)</span><?php
+                    } else if ($max_dues_year < get_option('oadueslookup_max_dues_year')) {
+                        ?><br><a href="<?php echo htmlspecialchars(get_option('oadueslookup_dues_url')) ?>">Click here to pay next year's dues online.</a><?php
                     }
                 } else {
                     ?><span class="oalm_dues_bad">Your dues are not current.</span><?php
@@ -560,6 +563,7 @@ if (isset($_FILES['oalm_file'])) {
 
         $slug = $_POST['oadueslookup_slug'];
         $dues_url = $_POST['oadueslookup_dues_url'];
+        $max_dues_year = $_POST['oadueslookup_max_dues_year'];
         $dues_register = $_POST['oadueslookup_dues_register'];
         $dues_register_msg = $_POST['oadueslookup_dues_register_msg'];
         $update_url = $_POST['oadueslookup_update_url'];
@@ -584,6 +588,12 @@ if (isset($_FILES['oalm_file'])) {
             $dues_url = esc_url_raw($dues_url);
             if ($dues_url != get_option('oadueslookup_dues_url')) {
                 update_option('oadueslookup_dues_url', $dues_url);
+                $foundchanges = 1;
+            }
+
+            $max_dues_year = intval($max_dues_year);
+            if ($max_dues_year != get_option('oadueslookup_max_dues_year')) {
+                update_option('oadueslookup_max_dues_year', $max_dues_year);
                 $foundchanges = 1;
             }
 
@@ -677,6 +687,12 @@ Any additional columns will be ignored.</p>
   <th scope="row"><label for="oadueslookup_dues_url">Dues Payment URL</label></th>
   <td><input id="oadueslookup_dues_url" name="oadueslookup_dues_url" class="regular-text code" type="text" value="<?php echo esc_html(get_option("oadueslookup_dues_url")); ?>">
   <p class="description">The URL to send members to for actually paying their dues.</p>
+  </td>
+</tr>
+<tr>
+  <th scope="row"><label for="oadueslookup_max_dues_year">Max dues year that can be paid</label></th>
+  <td><input id="oadueslookup_max_dues_year" name="oadueslookup_max_dues_year" class="regular-text code" type="text" value="<?php echo esc_html(get_option("oadueslookup_max_dues_year")); ?>">
+  <p class="description">If the member's dues year is less than this, they will be prompted to pay dues anyway, even if they are otherwise current. This can be used to allow members to pay the following year for example.</p>
   </td>
 </tr>
 <tr>

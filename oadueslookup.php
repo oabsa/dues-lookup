@@ -448,17 +448,15 @@ if (isset($_FILES['oalm_file'])) {
     #echo "<strong>Type:</strong> " . esc_html($_FILES['oalm_file']['type']) . "<br>";
     if (preg_match('/\.xlsx$/',$_FILES['oalm_file']['name'])) {
 
-        /** PHPExcel */
-        include plugin_dir_path( __FILE__ ) . 'PHPExcel-1.8.0/Classes/PHPExcel.php';
+        require_once plugin_dir_path( __FILE__ ) . 'vendor/autoload.php';
+        use PhpOffice\PhpSpreadsheet\Spreadsheet;
+        use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
-        /** PHPExcel_Writer_Excel2007 */
-        include plugin_dir_path( __FILE__ ) . 'PHPExcel-1.8.0/Classes/PHPExcel/Writer/Excel2007.php';
-
-        $objReader = new PHPExcel_Reader_Excel2007();
+        $objReader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
         $objReader->setReadDataOnly(true);
         $objReader->setLoadSheetsOnly( array("All") );
-        $objPHPExcel = $objReader->load($_FILES["oalm_file"]["tmp_name"]);
-        $objWorksheet = $objPHPExcel->getActiveSheet();
+        $objSpreadsheet = $objReader->load($_FILES["oalm_file"]["tmp_name"]);
+        $objWorksheet = $objSpreadsheet->getActiveSheet();
         $columnMap = array(
             'BSA ID'            => 'bsaid',
             'Dues Yr.'          => 'max_dues_year',
@@ -517,7 +515,7 @@ if (isset($_FILES['oalm_file'])) {
                         $date = $cell->getValue();
                         $dateint = intval($date);
                         $dateintVal = (int) $dateint;
-                        $value = PHPExcel_Style_NumberFormat::toFormattedString($dateintVal, "YYYY-MM-DD");
+                        $value = \PhpOffice\PhpSpreadsheet\Style\NumberFormat::toFormattedString($dateintVal, "YYYY-MM-DD");
                     } else if ($columnName == "Reg. Audit Date") {
                         # this is also a date field, but can be empty
                         $date = $cell->getValue();
@@ -526,7 +524,7 @@ if (isset($_FILES['oalm_file'])) {
                         } else {
                             $dateint = intval($date);
                             $dateintVal = (int) $dateint;
-                            $value = PHPExcel_Style_NumberFormat::toFormattedString($dateintVal, "YYYY-MM-DD");
+                            $value = \PhpOffice\PhpSpreadsheet\Style\NumberFormat::toFormattedString($dateintVal, "YYYY-MM-DD");
                         }
                     } else {
                         $value = $cell->getValue();

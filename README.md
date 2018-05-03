@@ -24,8 +24,8 @@ Makes use of data exported from OA LodgeMaster, which needs to be periodically i
 See the Github page for detailed instructions and to file bug reports.
 https://github.com/oa-bsa/dues-lookup/wiki
 
-This plugin embeds the PHPExcel library intact with no modifications, which is licensed separately under LGPL.  PHPExcel can be found at
-https://github.com/PHPOffice/PHPExcel
+This plugin embeds the PhpSpreadsheet library intact with no modifications, which is licensed separately under LGPL.  PhpSpreadsheet can be found at
+https://github.com/PHPOffice/PhpSpreadsheet
 
 ## Installation
 
@@ -34,6 +34,10 @@ https://github.com/PHPOffice/PHPExcel
 1. Go to "OA Dues Lookup" under "Settings" to find the settings and to upload data.
 
 ## Changelog
+
+### 1.1.0
+* Convert from PHPExcel (which has been discontinued and is no longer
+  supported) to its successor project PhpSpreadsheet
 
 ### 1.0.7
 * Added Nataepu Shohpe-specific message that if your ID number wasn't found

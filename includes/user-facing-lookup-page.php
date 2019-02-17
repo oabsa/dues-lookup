@@ -87,7 +87,7 @@ pay them <a href="<?php echo get_option('oadueslookup_dues_url') ?>">here</a>.</
 ?></td></tr>
 <tr><th>Last Dues Payment</th><td class="oalm_value"><?php echo htmlspecialchars($dues_paid_date) ?></td><td class="oalm_desc"></td></tr>
 <tr><th>Your current honor/level</th><td class="oalm_value"><?php echo htmlspecialchars($level) ?></td><td class="oalm_desc"></td></tr>
-<tr><th>BSA Registration</th><td class="oalm_value"><?php echo htmlspecialchars($bsa_regvel) ?></td><td class="oalm_desc"></td></tr>
+<tr><th>BSA Registration</th><td class="oalm_value"><?php echo htmlspecialchars($bsa_reg) ?></td><td class="oalm_desc"></td></tr>
 <tr><th>BSA Verification Status</th><td class="oalm_value"><?php esc_html_e($bsa_verify_status) ?></td><td class="oalm_desc" style="text-align: left;"><?php
                 switch ($bsa_verify_status) {
                     case "BSA ID Verified":
@@ -172,7 +172,7 @@ pay them <a href="<?php echo get_option('oadueslookup_dues_url') ?>">here</a>.</
 </form>
 <br>
 <p>You can find your Member ID at the bottom of your blue BSA Membership card:</p>
-<p><img src="<?php echo plugins_url("BSAMemberCard.png", __FILE__) ?>" alt="Membership Card" style="border: 1px solid #ccc;"></p>
+<p><img src="<?php echo plugins_url("../BSAMemberCard.png", __FILE__) ?>" alt="Membership Card" style="border: 1px solid #ccc;"></p>
 <p>If you can't find your membership card, your unit committee chairperson should be able to look it up on your unit recharter document, or your advancement chairperson can look it up in the Online Advancement System.</p>
 <p>If you just came here to update your contact information, <a href="<?php echo htmlspecialchars(get_option('oadueslookup_update_url')) ?>">click here</a>.</p>
 <?php

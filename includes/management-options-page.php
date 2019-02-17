@@ -122,11 +122,6 @@ if (isset($_FILES['oalm_file'])) {
                             $dateintVal = (int) $dateint;
                             $value = \PhpOffice\PhpSpreadsheet\Style\NumberFormat::toFormattedString($dateintVal, "YYYY-MM-DD");
                         }
-                    } elseif ($columnName === 'BSA Reg.') {
-                        $bool = $cell->getValue();
-
-                    } elseif ($columnName === 'BSA Reg. Overridden') {
-
                     } else {
                         $value = $cell->getValue();
                     }
@@ -134,7 +129,7 @@ if (isset($_FILES['oalm_file'])) {
                         $rowData[$columnMap[$columnName]] = $value;
                     }
                 }
-                if ($wpdb->insert($dbprefix . "dues_data", $rowData, array('%s','%s','%s','%d','%d','%s','%s'))) {
+                if ($wpdb->insert($dbprefix . "dues_data", $rowData, array('%s','%s','%s','%s','%d','%d','%s','%s'))) {
                     $recordcount++;
                 }
             }

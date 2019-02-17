@@ -6,9 +6,9 @@
 
 *Requires at least:* 3.0.1
 
-*Tested up to:* 4.0.1
+*Tested up to:* 4.0.2
 
-*Stable tag:* trunk
+*Stable tag:* master
 
 *License:* GPLv2 or later
 
@@ -29,11 +29,14 @@ https://github.com/PHPOffice/PhpSpreadsheet
 
 ## Installation
 
-1. Place the unpacked "osdueslookup" directory in the "/wp-content/plugins/" directory.
+1. Place the unpacked "oadueslookup" directory in the "/wp-content/plugins/" directory.
 1. Activate the plugin through the "Plugins" menu in WordPress.
 1. Go to "OA Dues Lookup" under "Settings" to find the settings and to upload data.
 
 ## Changelog
+
+### 2.0.0
+* Updated to support the BSA registration and verification fields in OA Lodgemaster 4.2.0 and later.
 
 ### 1.1.0
 * Convert from PHPExcel (which has been discontinued and is no longer

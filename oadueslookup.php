@@ -3,14 +3,14 @@
  * Plugin Name: OA Dues Lookup
  * Plugin URI: https://github.com/oa-bsa/dues-lookup/
  * Description: Wordpress plugin to use in conjunction with OA LodgeMaster to allow members to look up when they last paid dues
- * Version: 1.0.7
+ * Version: 2.0.0
  * Author: Dave Miller
  * Author URI: http://twitter.com/justdavemiller
  * Author Email: github@justdave.net
  * */
 
 /*
- * Copyright (C) 2014 David D. Miller
+ * Copyright (C) 2014-2019 David D. Miller
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License

@@ -42,7 +42,7 @@ if (isset($_FILES['oalm_file'])) {
     #echo "<strong>Type:</strong> " . esc_html($_FILES['oalm_file']['type']) . "<br>";
     if (preg_match('/\.xlsx$/',$_FILES['oalm_file']['name'])) {
 
-        require_once plugin_dir_path( __FILE__ ) . 'vendor/autoload.php';
+        require_once plugin_dir_path( __FILE__ ) . '../vendor/autoload.php';
         #use PhpOffice\PhpSpreadsheet\Spreadsheet;
         #use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
@@ -57,7 +57,7 @@ if (isset($_FILES['oalm_file'])) {
             'Dues Pd. Dt.'          => 'dues_paid_date',
             'Level'                 => 'level',
             'BSA Reg.'              => 'bsa_reg',
-            'BSA Reg. Overridden'   => 'bsa_reg_overridden',
+            'BSA Reg. Overidden'    => 'bsa_reg_overridden',
             'BSA Verify Date'       => 'bsa_verify_date',
             'BSA Verify Status'     => 'bsa_verify_status',
         );

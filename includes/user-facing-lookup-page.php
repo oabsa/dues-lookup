@@ -17,7 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-function oadueslookup_user_page( &$wp ) {
+function oadueslookup_user_page(&$wp) {
     global $wpdb;
     $dbprefix = $wpdb->prefix . "oalm_";
 
@@ -25,7 +25,7 @@ function oadueslookup_user_page( &$wp ) {
     if ( isset($_POST['bsaid']) ) {
         $bsaid = trim($_POST['bsaid']);
         if (preg_match('/^\d+$/', $bsaid)) {
-            $results = $wpdb->get_row($wpdb->prepare("SELECT max_dues_year, dues_paid_date, level, reg_audit_date, reg_audit_result FROM ${dbprefix}dues_data WHERE bsaid = %d", array($bsaid)));
+            $results = $wpdb->get_row($wpdb->prepare("SELECT max_dues_year, dues_paid_date, level, bsa_reg, bsa_reg_overridden, bsa_verify_date, bsa_verify_status FROM ${dbprefix}dues_data WHERE bsaid = %d", array($bsaid)));
             if (!isset($results)) {
 ?>
 <div class="oalm_dues_bad"><p>Your BSA Member ID <?php echo htmlspecialchars($bsaid) ?> was not found.</p></div>
@@ -49,9 +49,16 @@ pay them <a href="<?php echo get_option('oadueslookup_dues_url') ?>">here</a>.</
                 $max_dues_year = $results->max_dues_year;
                 $dues_paid_date = $results->dues_paid_date;
                 $level = $results->level;
-                $reg_audit_date = $results->reg_audit_date;
-                $reg_audit_result = $results->reg_audit_result;
-                if ($reg_audit_result == "") { $reg_audit_result = "Not Checked"; }
+                $bsa_reg = $results->bsa_reg ? "Registered" : "Not Registered";
+                $bsa_reg_overridden = $results->bsa_reg_overridden;
+                if ($bsa_reg_overridden) {
+                    $bsa_reg = $bsa_reg . " (overridden)";
+                }
+                $bsa_verify_date = $results->bsa_verify_date;
+                $bsa_verify_status = $results->bsa_verify_status;
+                if ($bsa_verify_status == "") {
+                    $bsa_verify_status = "Never Run";
+                }
 ?>
 <table class="oalm_dues_table">
 <tr><th>BSA Member ID</th><td class="oalm_value"><?php echo htmlspecialchars($bsaid) ?></td><td class="oalm_desc"></td></tr>
@@ -59,7 +66,7 @@ pay them <a href="<?php echo get_option('oadueslookup_dues_url') ?>">here</a>.</
                 $thedate = getdate();
                 if ($max_dues_year >= $thedate['year']) {
                     ?><span class="oalm_dues_good">Your dues are current.</span><?php
-                    if (($reg_audit_result == "Not Registered") || ($reg_audit_result == "No Match Found")) {
+                    if (($bsa_verify_status === "Never Run") || ($bsa_verify_status === "BSA ID Not Found") || ($bsa_verify_status === "BSA ID Found - Data Mismatch")) {
                         ?><br><span class="oalm_dues_bad">However, your OA
                         membership is not currently valid because we could not
                         verify your BSA Membership status (see
@@ -69,24 +76,25 @@ pay them <a href="<?php echo get_option('oadueslookup_dues_url') ?>">here</a>.</
                     }
                 } else {
                     ?><span class="oalm_dues_bad">Your dues are not current.</span><?php
-                    if (($reg_audit_result != "Not Registered") && ($reg_audit_result != "No Match Found")) {
+                    if (($bsa_verify_status !== "Never Run") && ($bsa_verify_status !== "BSA ID Not Found") && ($bsa_verify_status !== "BSA ID Found - Data Mismatch")) {
                         ?><br><a href="<?php echo htmlspecialchars(get_option('oadueslookup_dues_url')) ?>">Click here to pay your dues online.</a>
                             <p><strong>NOTE:</strong> If you already made a payment more recently than <?php esc_html_e(get_option('oadueslookup_last_update')) ?> it is not yet reflected here.</p><?php
                     }
-                    if (get_option('oadueslookup_dues_register') == '1') {
+                    if (get_option('oadueslookup_dues_register') === "1") {
                         ?><p><strong>NOTE:</strong>  <?php esc_html_e(get_option('oadueslookup_dues_register_msg')) ?></p><?php
                     }
                 }
 ?></td></tr>
 <tr><th>Last Dues Payment</th><td class="oalm_value"><?php echo htmlspecialchars($dues_paid_date) ?></td><td class="oalm_desc"></td></tr>
 <tr><th>Your current honor/level</th><td class="oalm_value"><?php echo htmlspecialchars($level) ?></td><td class="oalm_desc"></td></tr>
-<tr><th>BSA Membership Status</th><td class="oalm_value"><?php esc_html_e($reg_audit_result) ?></td><td class="oalm_desc" style="text-align: left;"><?php
-                switch ($reg_audit_result) {
-                    case "Registered":
+<tr><th>BSA Registration</th><td class="oalm_value"><?php echo htmlspecialchars($bsa_regvel) ?></td><td class="oalm_desc"></td></tr>
+<tr><th>BSA Verification Status</th><td class="oalm_value"><?php esc_html_e($bsa_verify_status) ?></td><td class="oalm_desc" style="text-align: left;"><?php
+                switch ($bsa_verify_status) {
+                    case "BSA ID Verified":
                         ?><span class="oalm_dues_good">You are currently an
                         active member of a Scouting unit.</span><br><?php
                         break;
-                    case "Not Registered":
+                    case "BSA ID Not Found":
                         ?><span class="oalm_dues_bad">Your BSA registration has
                         expired, which means you are no longer listed as a
                         registered member of any Scouting unit, and also cannot
@@ -100,20 +108,20 @@ pay them <a href="<?php echo get_option('oadueslookup_dues_url') ?>">here</a>.</
                         please check with all of them, as only the "primary"
                         unit counts, and it's not always clear which one is
                         primary.<br><br>We last checked your status in the
-                        BSA database on <?php esc_html_e($reg_audit_date);
+                        BSA database on <?php esc_html_e($bsa_verify_date);
                         break;
-                    case "No Match Found":
+                    case "BSA ID Found - Data Mismatch":
                         ?><span class="oalm_dues_bad">Our most recent audit
                         could not find you in the BSA database.</span><br>We
                         last attempted to find you on <?php
-                        esc_html_e($reg_audit_date) ?>.<br><br>This
+                        esc_html_e($bsa_verify_date) ?>.<br><br>This
                         almost always means the information we have on file for
                         you does not match what is on your unit's official
-                        roster.  We must be able to verify your BSA membership
-                        before you can renew your OA membership.  Please check
+                        roster. We must be able to verify your BSA membership
+                        before you can renew your OA membership. Please check
                         with your unit committee chairperson or advancement
                         chairperson to verify how they have you listed on the
-                        unit roster.  The items which matter are:<ol><li>the
+                        unit roster. The items which matter are:<ol><li>the
                         spelling, spacing, and punctuation of your last
                         name,</li><li>your birth date,</li><li>your gender,
                         and</li><li>your BSA Member ID.</li></ol>Once you've
@@ -125,7 +133,7 @@ pay them <a href="<?php echo get_option('oadueslookup_dues_url') ?>">here</a>.</
                         </a>
                         <?php
                         break;
-                    case "Not Checked":
+                    case "Never Run":
                         ?>This means one of the following things:<ul>
                         <li>You're new, and we haven't run a new audit against
                         the BSA database since you were put in the OA
@@ -172,8 +180,8 @@ pay them <a href="<?php echo get_option('oadueslookup_dues_url') ?>">here</a>.</
     return ob_get_clean();
 }
 
-function oadueslookup_url_handler( &$wp ) {
-    if($wp->request == get_option('oadueslookup_slug')) {
+function oadueslookup_url_handler(&$wp) {
+    if ($wp->request == get_option('oadueslookup_slug')) {
         # http://stackoverflow.com/questions/17960649/wordpress-plugin-generating-virtual-pages-and-using-theme-template
         # Note that we don't need to do a template redirect as suggesting in
         # the example because all we do is load the template anyway. We can let
@@ -189,7 +197,7 @@ function oadueslookup_dummypost($posts) {
     // don't call the_content filter
     global $wp, $wp_query;
 
-    //create a fake post intance
+    //create a fake post instance
     $p = new stdClass;
     // fill $p with everything a page in the database would have
     $p->ID = -1;
@@ -219,15 +227,15 @@ function oadueslookup_dummypost($posts) {
     $p->ancestors = array(); // 3.6
 
     // reset wp_query properties to simulate a found page
-    $wp_query->is_page = TRUE;
-    $wp_query->is_singular = TRUE;
-    $wp_query->is_home = FALSE;
-    $wp_query->is_archive = FALSE;
-    $wp_query->is_category = FALSE;
+    $wp_query->is_page = true;
+    $wp_query->is_singular = true;
+    $wp_query->is_home = false;
+    $wp_query->is_archive = false;
+    $wp_query->is_category = false;
     unset($wp_query->query['error']);
     $wp->query = array();
     $wp_query->query_vars['error'] = '';
-    $wp_query->is_404 = FALSE;
+    $wp_query->is_404 = false;
 
     $wp_query->current_post = $p->ID;
     $wp_query->found_posts = 1;

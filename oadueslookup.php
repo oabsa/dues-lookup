@@ -56,7 +56,7 @@ function oadueslookup_plugin_updater_init() {
 }
 
 global $oadueslookup_db_version;
-$oadueslookup_db_version = 2;
+$oadueslookup_db_version = 3;
 
 function oadueslookup_create_table($ddl) {
     global $wpdb;
@@ -100,18 +100,20 @@ function oadueslookup_install() {
     // change it'll need update code (see below).
 
     $sql = "CREATE TABLE ${dbprefix}dues_data (
-  bsaid            INT NOT NULL,
-  max_dues_year    VARCHAR(4),
-  dues_paid_date   DATE,
-  level            VARCHAR(12),
-  reg_audit_date   DATE,
-  reg_audit_result VARCHAR(15),
+  bsaid                 INT NOT NULL,
+  max_dues_year         VARCHAR(4),
+  dues_paid_date        DATE,
+  level                 VARCHAR(12),
+  bsa_reg               TINYINT(1),
+  bsa_reg_overridden    TINYINT(1),
+  bsa_verify_date       DATE,
+  bsa_verify_status     VARCHAR(50),
   PRIMARY KEY (bsaid)
 );";
-    oadueslookup_create_table( $sql );
+    oadueslookup_create_table($sql);
 
     //
-    // DATABSE UPDATE CODE
+    // DATABASE UPDATE CODE
     //
 
     // Check the stored database schema version and compare it to the version
@@ -129,7 +131,7 @@ function oadueslookup_install() {
         // from the initialization of the tables above, so make it the
         // current version so we don't run any update code.
         $installed_version = $oadueslookup_db_version;
-        add_option( "oadueslookup_db_version", $oadueslookup_db_version );
+        add_option("oadueslookup_db_version", $oadueslookup_db_version);
     }
 
     if ($installed_version < 2) {
@@ -137,18 +139,29 @@ function oadueslookup_install() {
         $wpdb->query("ALTER TABLE ${dbprefix}dues_data ADD COLUMN reg_audit_date DATE");
     }
 
+    if ($installed_version >= 2 && $installed_version < 3) {
+        # Drop the old registration audit fields for OALM 4.0.1 or below.
+        $wpdb->query("ALTER TABLE ${dbprefix}dues_data DROP COLUMN reg_audit_date");
+        $wpdb->query("ALTER TABLE ${dbprefix}dues_data DROP COLUMN reg_audit_result");
+        # Add the columns for the BSA registration fields in OALM 4.0.2 and above.
+        $wpdb->query("ALTER TABLE ${dbprefix}dues_data ADD COLUMN bsa_reg TINYINT(1)");
+        $wpdb->query("ALTER TABLE ${dbprefix}dues_data ADD COLUMN bsa_reg_overridden TINYINT(1)");
+        $wpdb->query("ALTER TABLE ${dbprefix}dues_data ADD COLUMN bsa_verify_date DATE");
+        $wpdb->query("ALTER TABLE ${dbprefix}dues_data ADD COLUMN bsa_verify_status VARCHAR(50)");
+    }
+
     // insert next database revision update code immediately above this line.
     // don't forget to increment $oadueslookup_db_version at the top of the file.
 
-    if ($installed_version < $oadueslookup_db_version ) {
+    if ($installed_version < $oadueslookup_db_version) {
         // updates are done, update the schema version to say we did them
-        update_option( "oadueslookup_db_version", $oadueslookup_db_version );
+        update_option("oadueslookup_db_version", $oadueslookup_db_version);
     }
 }
 
 function oadueslookup_update_db_check() {
     global $oadueslookup_db_version;
-    if (get_site_option( 'oadueslookup_db_version' ) != $oadueslookup_db_version) {
+    if (get_site_option("oadueslookup_db_version") != $oadueslookup_db_version) {
         oadueslookup_install();
     }
     # do these here instead of in the starting data insert code because these
@@ -173,16 +186,16 @@ function oadueslookup_insert_sample_data() {
     $dbprefix = $wpdb->prefix . "oalm_";
 
     $wpdb->query("INSERT INTO ${dbprefix}dues_data " .
-        "(bsaid,    max_dues_year, dues_paid_date, level,        reg_audit_date, reg_audit_result) VALUES " .
-        "('123453','2013',         '2012-11-15',   'Brotherhood','1900-01-01',   'No Match Found'), " .
-        "('123454','2014',         '2013-12-28',   'Ordeal',     '1900-01-01',   'Not Registered'), " .
-        "('123455','2014',         '2013-12-28',   'Brotherhood','1900-01-01',   'Registered'), " .
-        "('123456','2013',         '2013-07-15',   'Ordeal',     '1900-01-01',   'Registered'), " .
-        "('123457','2014',         '2013-12-18',   'Brotherhood','1900-01-01',   'No Match Found'), " .
-        "('123458','2013',         '2013-03-15',   'Vigil',      '1900-01-01',   'Not Registered'), " .
-        "('123459','2015',         '2014-03-15',   'Ordeal',     '1900-01-01',   '')"
+        "(bsaid,    max_dues_year, dues_paid_date, level,        bsa_reg,   bsa_reg_overridden, bsa_verify_date, bsa_verify_status) VALUES " .
+        "('123453','2013',         '2012-11-15',   'Brotherhood','1',       '0',                '1900-01-01',   'BSA ID Not Found'), " .
+        "('123454','2014',         '2013-12-28',   'Ordeal',     '1',       '0',                '1900-01-01',   'BSA ID Not Found'), " .
+        "('123455','2014',         '2013-12-28',   'Brotherhood','1',       '0',                '1900-01-01',   'BSA ID Verified'), " .
+        "('123456','2013',         '2013-07-15',   'Ordeal',     '1',       '0',                '1900-01-01',   'BSA ID Verified'), " .
+        "('123457','2014',         '2013-12-18',   'Brotherhood','0',       '0',                '1900-01-01',   'BSA ID Found - Data Mismatch'), " .
+        "('123458','2013',         '2013-03-15',   'Vigil',      '1',       '0',                '1900-01-01',   'BSA ID Not Found'), " .
+        "('123459','2015',         '2014-03-15',   'Ordeal',     '0',       '0',                '1900-01-01',   'Never Run')"
     );
-    $wpdb->query($wpdb->prepare("UPDATE ${dbprefix}dues_data SET reg_audit_date=%s", get_option('oadueslookup_last_update')));
+    $wpdb->query($wpdb->prepare("UPDATE ${dbprefix}dues_data SET bsa_verify_date=%s", get_option('oadueslookup_last_update')));
 }
 
 function oadueslookup_install_data() {
@@ -190,7 +203,6 @@ function oadueslookup_install_data() {
     $dbprefix = $wpdb->prefix . "oalm_";
 
     oadueslookup_insert_sample_data();
-
 }
 
 require_once("includes/user-facing-lookup-page.php");

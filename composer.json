@@ -1,12 +1,7 @@
 {
-    "name": "dues-lookup",
+    "name": "oabsa/dues-lookup",
+    "description": "Wordpress plugin to use in conjunction with OA LodgeMaster to allow members to look up when they last paid dues",
     "version": "2.0.0",
-    "repositories": [
-        {
-            "type": "git",
-            "url": "https://github.com/oabsa/dues-lookup"
-        }
-    ],
     "require": {
         "phpoffice/phpspreadsheet": "^1.6"
     },

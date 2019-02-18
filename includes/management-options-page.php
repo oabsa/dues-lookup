@@ -17,41 +17,42 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-function oadueslookup_plugin_menu() {
-    add_options_page( 'OA Dues Lookup', 'OA Dues Lookup', 'manage_options', 'oadueslookup', 'oadueslookup_options' );
+function oadueslookup_plugin_menu()
+{
+    add_options_page('OA Dues Lookup', 'OA Dues Lookup', 'manage_options', 'oadueslookup', 'oadueslookup_options');
 }
 
-function oadueslookup_options() {
+function oadueslookup_options()
+{
 
     global $wpdb;
 
     $dbprefix = $wpdb->prefix . "oalm_";
     $hidden_field_name = 'oalm_submit_hidden';
 
-    if ( !current_user_can( 'manage_options' ) )  {
-        wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
+    if (!current_user_can('manage_options')) {
+        wp_die(__('You do not have sufficient permissions to access this page.'));
     }
 
     // =========================
     // form processing code here
     // =========================
 
-if (isset($_FILES['oalm_file'])) {
-    #echo "<h3>Processing file upload</h3>";
-    #echo "<strong>Processing File:</strong> " . esc_html($_FILES['oalm_file']['name']) . "<br>";
-    #echo "<strong>Type:</strong> " . esc_html($_FILES['oalm_file']['type']) . "<br>";
-    if (preg_match('/\.xlsx$/',$_FILES['oalm_file']['name'])) {
+    if (isset($_FILES['oalm_file'])) {
+        #echo "<h3>Processing file upload</h3>";
+        #echo "<strong>Processing File:</strong> " . esc_html($_FILES['oalm_file']['name']) . "<br>";
+        #echo "<strong>Type:</strong> " . esc_html($_FILES['oalm_file']['type']) . "<br>";
+        if (preg_match('/\.xlsx$/', $_FILES['oalm_file']['name'])) {
+            require_once plugin_dir_path(__FILE__) . '../vendor/autoload.php';
+            #use PhpOffice\PhpSpreadsheet\Spreadsheet;
+            #use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
-        require_once plugin_dir_path( __FILE__ ) . '../vendor/autoload.php';
-        #use PhpOffice\PhpSpreadsheet\Spreadsheet;
-        #use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-
-        $objReader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
-        $objReader->setReadDataOnly(true);
-        $objReader->setLoadSheetsOnly( array("All") );
-        $objSpreadsheet = $objReader->load($_FILES["oalm_file"]["tmp_name"]);
-        $objWorksheet = $objSpreadsheet->getActiveSheet();
-        $columnMap = array(
+            $objReader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
+            $objReader->setReadDataOnly(true);
+            $objReader->setLoadSheetsOnly(array("All"));
+            $objSpreadsheet = $objReader->load($_FILES["oalm_file"]["tmp_name"]);
+            $objWorksheet = $objSpreadsheet->getActiveSheet();
+            $columnMap = array(
             'BSA ID'                => 'bsaid',
             'Dues Yr.'              => 'max_dues_year',
             'Dues Pd. Dt.'          => 'dues_paid_date',
@@ -60,101 +61,100 @@ if (isset($_FILES['oalm_file'])) {
             'BSA Reg. Overidden'    => 'bsa_reg_overridden',
             'BSA Verify Date'       => 'bsa_verify_date',
             'BSA Verify Status'     => 'bsa_verify_status',
-        );
-        $complete = 0;
-        $recordcount = 0;
-        $error_output = "";
-        foreach ($objWorksheet->getRowIterator() as $row) {
-            $rowData = array();
-            if ($row->getRowIndex() == 1) {
-                # this is the header row, grab the headings
-                $cellIterator = $row->getCellIterator();
-                $cellIterator->setIterateOnlyExistingCells(FALSE);
-                foreach ($cellIterator as $cell) {
-                    $cellValue = $cell->getValue();
-                    if (isset($columnMap[$cellValue])) {
-                        $rowData[$columnMap[$cellValue]] = 1;
-                        #echo "Found column " . htmlspecialchars($cell->getColumn()) . " with title '" . htmlspecialchars($cellValue) . "'<br>" . PHP_EOL;
-                    } else {
-                        #echo "Discarding unknown column " . htmlspecialchars($cell->getColumn()) . " with title '" . htmlspecialchars($cellValue) . "'<br>" . PHP_EOL;
+            );
+            $complete = 0;
+            $recordcount = 0;
+            $error_output = "";
+            foreach ($objWorksheet->getRowIterator() as $row) {
+                $rowData = array();
+                if ($row->getRowIndex() == 1) {
+                    # this is the header row, grab the headings
+                    $cellIterator = $row->getCellIterator();
+                    $cellIterator->setIterateOnlyExistingCells(false);
+                    foreach ($cellIterator as $cell) {
+                        $cellValue = $cell->getValue();
+                        if (isset($columnMap[$cellValue])) {
+                            $rowData[$columnMap[$cellValue]] = 1;
+                            #echo "Found column " . htmlspecialchars($cell->getColumn()) . " with title '" . htmlspecialchars($cellValue) . "'<br>" . PHP_EOL;
+                        } else {
+                            #echo "Discarding unknown column " . htmlspecialchars($cell->getColumn()) . " with title '" . htmlspecialchars($cellValue) . "'<br>" . PHP_EOL;
+                        }
                     }
-                }
-                $missingColumns = array();
-                foreach ($columnMap as $key => $value) {
-                    if (!isset($rowData[$value])) {
-                        $missingColumns[] = $key;
+                    $missingColumns = array();
+                    foreach ($columnMap as $key => $value) {
+                        if (!isset($rowData[$value])) {
+                            $missingColumns[] = $key;
+                        }
                     }
-                }
-                if ($missingColumns) {
-                    ?><div class="error"><p><strong>Import failed.</strong></p><p>Missing required columns: <?php esc_html_e(implode(", ",$missingColumns)) ?></div><?php
+                    if ($missingColumns) {
+                        ?><div class="error"><p><strong>Import failed.</strong></p><p>Missing required columns: <?php esc_html_e(implode(", ", $missingColumns)) ?></div><?php
                     $complete = 1; # Don't show "may have failed" box at the bottom
                     break;
+                    } else {
+                        #echo "<strong>Data format validated:</strong> Importing new data...<br>" . PHP_EOL;
+                        # we just validated that we have a good data file, nuke the existing data
+                        $wpdb->show_errors();
+                        ob_start();
+                        $wpdb->query("TRUNCATE TABLE ${dbprefix}dues_data");
+                        update_option('oadueslookup_last_import', $wpdb->get_var("SELECT DATE_FORMAT(NOW(), '%Y-%m-%d')"));
+                        # re-insert the test data
+                        oadueslookup_insert_sample_data();
+                        # now we're ready for the incoming from the rest of the file.
+                    }
                 } else {
-                    #echo "<strong>Data format validated:</strong> Importing new data...<br>" . PHP_EOL;
-                    # we just validated that we have a good data file, nuke the existing data
-                    $wpdb->show_errors();
-                    ob_start();
-                    $wpdb->query("TRUNCATE TABLE ${dbprefix}dues_data");
-                    update_option('oadueslookup_last_import', $wpdb->get_var("SELECT DATE_FORMAT(NOW(), '%Y-%m-%d')"));
-                    # re-insert the test data
-                    oadueslookup_insert_sample_data();
-                    # now we're ready for the incoming from the rest of the file.
-                }
-            } else {
-                $cellIterator = $row->getCellIterator();
-                $cellIterator->setIterateOnlyExistingCells(FALSE);
-                foreach ($cellIterator as $cell) {
-                    $columnName = $objWorksheet->getCell($cell->getColumn() . "1")->getValue();
-                    $value = "";
-                    if ($columnName === "Dues Pd. Dt.") {
-                        # this is a date field, and we have to work miracles to turn it into a mysql-compatible date
-                        $date = $cell->getValue();
-                        $dateint = intval($date);
-                        $dateintVal = (int) $dateint;
-                        $value = \PhpOffice\PhpSpreadsheet\Style\NumberFormat::toFormattedString($dateintVal, "YYYY-MM-DD");
-                    } elseif ($columnName === "BSA Verify Date") {
-                        # this is also a date field, but can be empty
-                        $date = $cell->getValue();
-                        if (!$date) {
-                            $value = get_option('oadueslookup_last_import');
-                        } else {
+                    $cellIterator = $row->getCellIterator();
+                    $cellIterator->setIterateOnlyExistingCells(false);
+                    foreach ($cellIterator as $cell) {
+                        $columnName = $objWorksheet->getCell($cell->getColumn() . "1")->getValue();
+                        $value = "";
+                        if ($columnName === "Dues Pd. Dt.") {
+                            # this is a date field, and we have to work miracles to turn it into a mysql-compatible date
+                            $date = $cell->getValue();
                             $dateint = intval($date);
                             $dateintVal = (int) $dateint;
                             $value = \PhpOffice\PhpSpreadsheet\Style\NumberFormat::toFormattedString($dateintVal, "YYYY-MM-DD");
+                        } elseif ($columnName === "BSA Verify Date") {
+                            # this is also a date field, but can be empty
+                            $date = $cell->getValue();
+                            if (!$date) {
+                                $value = get_option('oadueslookup_last_import');
+                            } else {
+                                $dateint = intval($date);
+                                $dateintVal = (int) $dateint;
+                                $value = \PhpOffice\PhpSpreadsheet\Style\NumberFormat::toFormattedString($dateintVal, "YYYY-MM-DD");
+                            }
+                        } else {
+                            $value = $cell->getValue();
                         }
-                    } else {
-                        $value = $cell->getValue();
+                        if (isset($columnMap[$columnName])) {
+                            $rowData[$columnMap[$columnName]] = $value;
+                        }
                     }
-                    if (isset($columnMap[$columnName])) {
-                        $rowData[$columnMap[$columnName]] = $value;
+                    if ($wpdb->insert($dbprefix . "dues_data", $rowData, array('%s','%s','%s','%s','%d','%d','%s','%s'))) {
+                        $recordcount++;
                     }
-                }
-                if ($wpdb->insert($dbprefix . "dues_data", $rowData, array('%s','%s','%s','%s','%d','%d','%s','%s'))) {
-                    $recordcount++;
                 }
             }
-        }
-        $error_output = ob_get_clean();
-        if (!$error_output) {
-            ?><div class="updated"><p><strong>Import successful. Imported <?php esc_html_e($recordcount) ?> records.</strong></p></div><?php
-        } else {
-            ?><div class="error"><p><strong>Import partially successful. Imported <?php esc_html_e($recordcount) ?> of <?php esc_html_e($row->getRowIndex() - 2) ?> records.</strong></p>
+            $error_output = ob_get_clean();
+            if (!$error_output) {
+                ?><div class="updated"><p><strong>Import successful. Imported <?php esc_html_e($recordcount) ?> records.</strong></p></div><?php
+            } else {
+                ?><div class="error"><p><strong>Import partially successful. Imported <?php esc_html_e($recordcount) ?> of <?php esc_html_e($row->getRowIndex() - 2) ?> records.</strong></p>
             <p>Errors follow:</p>
-            <?php echo $error_output ?>
+                <?php echo $error_output ?>
             </div><?php
+            }
+            update_option('oadueslookup_last_update', $wpdb->get_var("SELECT DATE_FORMAT(MAX(dues_paid_date), '%Y-%m-%d') FROM ${dbprefix}dues_data"));
+        } else {
+            ?><div class="error"><p><strong>Invalid file upload.</strong> Not an XLSX file.</p></div><?php
         }
-        update_option('oadueslookup_last_update', $wpdb->get_var("SELECT DATE_FORMAT(MAX(dues_paid_date), '%Y-%m-%d') FROM ${dbprefix}dues_data"));
-    } else {
-        ?><div class="error"><p><strong>Invalid file upload.</strong> Not an XLSX file.</p></div><?php
     }
-}
 
     //
     // HANDLE SETTINGS SCREEN UPDATES
     //
 
-    if( isset($_POST[ $hidden_field_name ]) && $_POST[ $hidden_field_name ] == 'oadueslookup-settings') {
-
+    if (isset($_POST[ $hidden_field_name ]) && $_POST[ $hidden_field_name ] == 'oadueslookup-settings') {
         $slug = $_POST['oadueslookup_slug'];
         $dues_url = $_POST['oadueslookup_dues_url'];
         $max_dues_year = $_POST['oadueslookup_max_dues_year'];
@@ -171,7 +171,6 @@ if (isset($_FILES['oalm_file'])) {
         if (!is_email($help_email)) {
             ?><div class="error"><p><strong>'<?php esc_html_e($help_email); ?>' is not a valid email address.</strong></p></div><?php
         } else {
-
             $foundchanges = 0;
             $slug = sanitize_title($slug);
             if ($slug != get_option('oadueslookup_slug')) {
@@ -230,7 +229,6 @@ if (isset($_FILES['oalm_file'])) {
                 ?><div class="updated"><p><strong>Changes saved.</strong></p></div><?php
             }
         }
-
     }
 
     // ============================
@@ -245,11 +243,11 @@ if (isset($_FILES['oalm_file'])) {
 
     // header
 
-    echo "<h2>" . __( 'OA Dues Lookup Settings', 'oadueslookup' ) . "</h2>";
+    echo "<h2>" . __('OA Dues Lookup Settings', 'oadueslookup') . "</h2>";
 
     // settings form
 
-?>
+    ?>
 
 <h3 class="oalm">Import data from OALM</h3>
 <p>Export file from OALM Must contain at least the following columns:<br>
@@ -262,8 +260,11 @@ Any additional columns will be ignored.</p>
 <input type="submit" class="button button-primary" name="submit" value="Upload"><br>
 <p><strong>Last import:</strong> <?php
     $last_import = get_option('oadueslookup_last_import');
-    if ($last_import == '1900-01-01') { echo "Never"; }
-    else { esc_html_e($last_import); }
+if ($last_import == '1900-01-01') {
+    echo "Never";
+} else {
+    esc_html_e($last_import);
+}
 ?></p>
 </form>
 <h3 class="oalm">Lookup Page Settings</h3>
@@ -291,7 +292,7 @@ Any additional columns will be ignored.</p>
 </tr>
 <tr>
     <th scope="row"><label for="oadueslookup_dues_register">Registration Required?</label></th>
-    <td><input id="oadueslookup_dues_register" name="oadueslookup_dues_register" class="code" type="checkbox" value="1"<?php checked( 1 == esc_html(get_option('oadueslookup_dues_register'))); ?>">
+    <td><input id="oadueslookup_dues_register" name="oadueslookup_dues_register" class="code" type="checkbox" value="1"<?php checked(1 == esc_html(get_option('oadueslookup_dues_register'))); ?>">
         <p class="description">Does the dues payment site require the user to register before paying?</p>
     </td>
 </tr>
@@ -329,7 +330,7 @@ Any additional columns will be ignored.</p>
 </table>
 <p class="submit"><input id="submit" class="button button-primary" type="submit" value="Save Changes" name="submit"></p>
 </form>
-<?php
+    <?php
 
     echo "</div>";
 } // END OF SETTINGS SCREEN

@@ -94,7 +94,6 @@ pay them <a href="<?php echo get_option('oadueslookup_dues_url') ?>">here</a>.</
                     // Member is a registered BSA Member in good standing
                     ?><span class="oalm_dues_good">You are currently an
                             active registered member of a Scouting unit.</span><br><?php
-                            break;
                 } else {
                     switch ($bsa_verify_status) {
                         case "BSA ID Verified":

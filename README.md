@@ -6,7 +6,7 @@
 
 *Requires at least:* 3.0.1
 
-*Tested up to:* 4.0.2
+*Tested up to:* 5.0.3
 
 *Stable tag:* master
 

@@ -27,38 +27,41 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-add_action( 'admin_menu', 'oadueslookup_plugin_menu' );
-add_action( 'parse_request', 'oadueslookup_url_handler' );
-add_action( 'plugins_loaded', 'oadueslookup_update_db_check' );
-register_activation_hook( __FILE__, 'oadueslookup_install' );
-register_activation_hook( __FILE__, 'oadueslookup_install_data' );
-add_action( 'wp_enqueue_scripts', 'oadueslookup_enqueue_css' );
-add_action( 'init', 'oadueslookup_plugin_updater_init' );
+add_action('admin_menu', 'oadueslookup_plugin_menu');
+add_action('parse_request', 'oadueslookup_url_handler');
+add_action('plugins_loaded', 'oadueslookup_update_db_check');
+register_activation_hook(__FILE__, 'oadueslookup_install');
+register_activation_hook(__FILE__, 'oadueslookup_install_data');
+add_action('wp_enqueue_scripts', 'oadueslookup_enqueue_css');
+add_action('init', 'oadueslookup_plugin_updater_init');
 
-function oadueslookup_enqueue_css() {
-    wp_register_style( 'oadueslookup-style', plugins_url('style.css', __FILE__) );
+function oadueslookup_enqueue_css()
+{
+    wp_register_style('oadueslookup-style', plugins_url('style.css', __FILE__));
     wp_enqueue_style('oadueslookup-style');
 }
 
-function oadueslookup_plugin_updater_init() {
+function oadueslookup_plugin_updater_init()
+{
     /* Load Plugin Updater */
-    require_once( trailingslashit( plugin_dir_path( __FILE__ ) ) . 'includes/plugin-updater.php' );
+    require_once(trailingslashit(plugin_dir_path(__FILE__)) . 'includes/plugin-updater.php');
 
     /* Updater Config */
     $config = array(
-        'base'      => plugin_basename( __FILE__ ), //required
+        'base'      => plugin_basename(__FILE__), //required
         'repo_uri'  => 'http://www.justdave.net/dave/',
         'repo_slug' => 'oadueslookup',
     );
 
     /* Load Updater Class */
-    new OADuesLookup_Plugin_Updater( $config );
+    new OADuesLookup_Plugin_Updater($config);
 }
 
 global $oadueslookup_db_version;
 $oadueslookup_db_version = 3;
 
-function oadueslookup_create_table($ddl) {
+function oadueslookup_create_table($ddl)
+{
     global $wpdb;
     $table = "";
     if (preg_match("/create table\s+(\w+)\s/i", $ddl, $match)) {
@@ -66,7 +69,7 @@ function oadueslookup_create_table($ddl) {
     } else {
         return false;
     }
-    foreach ($wpdb->get_col("SHOW TABLES",0) as $tbl ) {
+    foreach ($wpdb->get_col("SHOW TABLES", 0) as $tbl) {
         if ($tbl == $table) {
             return true;
         }
@@ -74,7 +77,7 @@ function oadueslookup_create_table($ddl) {
     // if we get here it doesn't exist yet, so create it
     $wpdb->query($ddl);
     // check if it worked
-    foreach ($wpdb->get_col("SHOW TABLES",0) as $tbl ) {
+    foreach ($wpdb->get_col("SHOW TABLES", 0) as $tbl) {
         if ($tbl == $table) {
             return true;
         }
@@ -82,7 +85,8 @@ function oadueslookup_create_table($ddl) {
     return false;
 }
 
-function oadueslookup_install() {
+function oadueslookup_install()
+{
     /* Reference: http://codex.wordpress.org/Creating_Tables_with_Plugins */
 
     global $wpdb;
@@ -140,10 +144,10 @@ function oadueslookup_install() {
     }
 
     if ($installed_version >= 2 && $installed_version < 3) {
-        # Drop the old registration audit fields for OALM 4.0.1 or below.
+        # Drop the old registration audit fields for OALM 4.1.2 or below.
         $wpdb->query("ALTER TABLE ${dbprefix}dues_data DROP COLUMN reg_audit_date");
         $wpdb->query("ALTER TABLE ${dbprefix}dues_data DROP COLUMN reg_audit_result");
-        # Add the columns for the BSA registration fields in OALM 4.0.2 and above.
+        # Add the columns for the BSA registration fields in OALM 4.2.0 and above.
         $wpdb->query("ALTER TABLE ${dbprefix}dues_data ADD COLUMN bsa_reg TINYINT(1)");
         $wpdb->query("ALTER TABLE ${dbprefix}dues_data ADD COLUMN bsa_reg_overridden TINYINT(1)");
         $wpdb->query("ALTER TABLE ${dbprefix}dues_data ADD COLUMN bsa_verify_date DATE");
@@ -159,7 +163,8 @@ function oadueslookup_install() {
     }
 }
 
-function oadueslookup_update_db_check() {
+function oadueslookup_update_db_check()
+{
     global $oadueslookup_db_version;
     if (get_site_option("oadueslookup_db_version") != $oadueslookup_db_version) {
         oadueslookup_install();
@@ -181,7 +186,8 @@ function oadueslookup_update_db_check() {
     add_option('oadueslookup_max_dues_year', '2016');
 }
 
-function oadueslookup_insert_sample_data() {
+function oadueslookup_insert_sample_data()
+{
     global $wpdb;
     $dbprefix = $wpdb->prefix . "oalm_";
 
@@ -193,12 +199,12 @@ function oadueslookup_insert_sample_data() {
         "('123456','2013',         '2013-07-15',   'Ordeal',     '1',       '0',                '1900-01-01',   'BSA ID Verified'), " .
         "('123457','2014',         '2013-12-18',   'Brotherhood','0',       '0',                '1900-01-01',   'BSA ID Found - Data Mismatch'), " .
         "('123458','2013',         '2013-03-15',   'Vigil',      '1',       '0',                '1900-01-01',   'BSA ID Not Found'), " .
-        "('123459','2015',         '2014-03-15',   'Ordeal',     '0',       '0',                '1900-01-01',   'Never Run')"
-    );
+        "('123459','2015',         '2014-03-15',   'Ordeal',     '0',       '0',                '1900-01-01',   'Never Run')");
     $wpdb->query($wpdb->prepare("UPDATE ${dbprefix}dues_data SET bsa_verify_date=%s", get_option('oadueslookup_last_update')));
 }
 
-function oadueslookup_install_data() {
+function oadueslookup_install_data()
+{
     global $wpdb;
     $dbprefix = $wpdb->prefix . "oalm_";
 
@@ -207,4 +213,3 @@ function oadueslookup_install_data() {
 
 require_once("includes/user-facing-lookup-page.php");
 require_once("includes/management-options-page.php");
-

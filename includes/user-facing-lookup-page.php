@@ -17,7 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-function oadueslookup_user_page( &$wp ) {
+function oadueslookup_user_page(&$wp) {
     global $wpdb;
     $dbprefix = $wpdb->prefix . "oalm_";
 
@@ -25,7 +25,7 @@ function oadueslookup_user_page( &$wp ) {
     if ( isset($_POST['bsaid']) ) {
         $bsaid = trim($_POST['bsaid']);
         if (preg_match('/^\d+$/', $bsaid)) {
-            $results = $wpdb->get_row($wpdb->prepare("SELECT max_dues_year, dues_paid_date, level, reg_audit_date, reg_audit_result FROM ${dbprefix}dues_data WHERE bsaid = %d", array($bsaid)));
+            $results = $wpdb->get_row($wpdb->prepare("SELECT max_dues_year, dues_paid_date, level, bsa_reg, bsa_reg_overridden, bsa_verify_date, bsa_verify_status FROM ${dbprefix}dues_data WHERE bsaid = %d", array($bsaid)));
             if (!isset($results)) {
 ?>
 <div class="oalm_dues_bad"><p>Your BSA Member ID <?php echo htmlspecialchars($bsaid) ?> was not found.</p></div>
@@ -49,9 +49,17 @@ pay them <a href="<?php echo get_option('oadueslookup_dues_url') ?>">here</a>.</
                 $max_dues_year = $results->max_dues_year;
                 $dues_paid_date = $results->dues_paid_date;
                 $level = $results->level;
-                $reg_audit_date = $results->reg_audit_date;
-                $reg_audit_result = $results->reg_audit_result;
-                if ($reg_audit_result == "") { $reg_audit_result = "Not Checked"; }
+                $bsa_reg = $results->bsa_reg ? "Registered" : "Not Registered";
+                $bsa_reg_overridden = $results->bsa_reg_overridden;
+                $bsa_reg_desc = $bsa_reg;
+                if ($bsa_reg_overridden) {
+                    $bsa_reg_desc = $bsa_reg_desc . " (overridden)";
+                }
+                $bsa_verify_date = $results->bsa_verify_date;
+                $bsa_verify_status = $results->bsa_verify_status;
+                if ($bsa_verify_status == "") {
+                    $bsa_verify_status = "Never Run";
+                }
 ?>
 <table class="oalm_dues_table">
 <tr><th>BSA Member ID</th><td class="oalm_value"><?php echo htmlspecialchars($bsaid) ?></td><td class="oalm_desc"></td></tr>
@@ -59,7 +67,7 @@ pay them <a href="<?php echo get_option('oadueslookup_dues_url') ?>">here</a>.</
                 $thedate = getdate();
                 if ($max_dues_year >= $thedate['year']) {
                     ?><span class="oalm_dues_good">Your dues are current.</span><?php
-                    if (($reg_audit_result == "Not Registered") || ($reg_audit_result == "No Match Found")) {
+                    if (($bsa_verify_status === "Never Run") || ($bsa_verify_status === "BSA ID Not Found") || ($bsa_verify_status === "BSA ID Found - Data Mismatch")) {
                         ?><br><span class="oalm_dues_bad">However, your OA
                         membership is not currently valid because we could not
                         verify your BSA Membership status (see
@@ -69,72 +77,84 @@ pay them <a href="<?php echo get_option('oadueslookup_dues_url') ?>">here</a>.</
                     }
                 } else {
                     ?><span class="oalm_dues_bad">Your dues are not current.</span><?php
-                    if (($reg_audit_result != "Not Registered") && ($reg_audit_result != "No Match Found")) {
+                    if (($bsa_verify_status !== "Never Run") && ($bsa_verify_status !== "BSA ID Not Found") && ($bsa_verify_status !== "BSA ID Found - Data Mismatch")) {
                         ?><br><a href="<?php echo htmlspecialchars(get_option('oadueslookup_dues_url')) ?>">Click here to pay your dues online.</a>
                             <p><strong>NOTE:</strong> If you already made a payment more recently than <?php esc_html_e(get_option('oadueslookup_last_update')) ?> it is not yet reflected here.</p><?php
                     }
-                    if (get_option('oadueslookup_dues_register') == '1') {
+                    if (get_option('oadueslookup_dues_register') === "1") {
                         ?><p><strong>NOTE:</strong>  <?php esc_html_e(get_option('oadueslookup_dues_register_msg')) ?></p><?php
                     }
                 }
 ?></td></tr>
 <tr><th>Last Dues Payment</th><td class="oalm_value"><?php echo htmlspecialchars($dues_paid_date) ?></td><td class="oalm_desc"></td></tr>
 <tr><th>Your current honor/level</th><td class="oalm_value"><?php echo htmlspecialchars($level) ?></td><td class="oalm_desc"></td></tr>
-<tr><th>BSA Membership Status</th><td class="oalm_value"><?php esc_html_e($reg_audit_result) ?></td><td class="oalm_desc" style="text-align: left;"><?php
-                switch ($reg_audit_result) {
-                    case "Registered":
-                        ?><span class="oalm_dues_good">You are currently an
-                        active member of a Scouting unit.</span><br><?php
-                        break;
-                    case "Not Registered":
-                        ?><span class="oalm_dues_bad">Your BSA registration has
-                        expired, which means you are no longer listed as a
-                        registered member of any Scouting unit, and also cannot
-                        be a member of the OA.</span><br>You will need to join
-                        a Scouting unit (troop, pack, crew, district, etc)
-                        before you may renew your OA Membership. If you
-                        <strong>are</strong> currently a member of a Scouting unit,
-                        please have your unit chairperson check to make sure
-                        your registration has been properly submitted to the
-                        council. If you are a member of more than one unit,
-                        please check with all of them, as only the "primary"
-                        unit counts, and it's not always clear which one is
-                        primary.<br><br>We last checked your status in the
-                        BSA database on <?php esc_html_e($reg_audit_date);
-                        break;
-                    case "No Match Found":
-                        ?><span class="oalm_dues_bad">Our most recent audit
-                        could not find you in the BSA database.</span><br>We
-                        last attempted to find you on <?php
-                        esc_html_e($reg_audit_date) ?>.<br><br>This
-                        almost always means the information we have on file for
-                        you does not match what is on your unit's official
-                        roster.  We must be able to verify your BSA membership
-                        before you can renew your OA membership.  Please check
-                        with your unit committee chairperson or advancement
-                        chairperson to verify how they have you listed on the
-                        unit roster.  The items which matter are:<ol><li>the
-                        spelling, spacing, and punctuation of your last
-                        name,</li><li>your birth date,</li><li>your gender,
-                        and</li><li>your BSA Member ID.</li></ol>Once you've
-                        verified this information, please submit it to us by using the
-                        "<?php echo htmlspecialchars(get_option('oadueslookup_update_option_text')) ?>"
-                        option on the
-                        <a href="<?php echo htmlspecialchars(get_option('oadueslookup_update_url')) ?>">
-                            <?php echo htmlspecialchars(get_option('oadueslookup_update_option_link_text')) ?>
-                        </a>
-                        <?php
-                        break;
-                    case "Not Checked":
-                        ?>This means one of the following things:<ul>
-                        <li>You're new, and we haven't run a new audit against
-                        the BSA database since you were put in the OA
-                        database</li> <li>Your BSA Member ID was just recently
-                        added to the OA database, and a new audit hasn't been
-                        run yet.</li> <li>You haven't paid dues in over 3
-                        years, so we didn't include you in the audit because we
-                        thought you were inactive.</li></ul> <?php
-                        break;
+<tr><th>BSA Registration</th><td class="oalm_value"><?php echo htmlspecialchars($bsa_reg_desc) ?></td><td class="oalm_desc"></td></tr>
+<tr><th>BSA Verification Status</th><td class="oalm_value"><?php esc_html_e($bsa_verify_status) ?></td><td class="oalm_desc" style="text-align: left;"><?php
+                if ($bsa_reg == "Registered") {
+                    // Member is a registered BSA Member in good standing
+                    ?><span class="oalm_dues_good">You are currently an
+                            active registered member of a Scouting unit.</span><br><?php
+                } else {
+                    switch ($bsa_verify_status) {
+                        case "BSA ID Verified":
+                            ?><span class="oalm_dues_bad">Your BSA registration has
+                            expired, which means you are no longer listed as an active
+                            registered member of any Scouting unit, and therefore cannot
+                            be a member of the OA.</span><br>You will need to reactivate
+                            your BSA membership by registering with a Scouting unit
+                            (troop, pack, crew, district, etc.) before you may renew
+                            your OA Membership. If you <strong>are</strong> currently a
+                            member of a Scouting unit, please have your unit chairperson
+                            check to make sure your registration has been properly submitted
+                            to the council. If you are a member of more than one unit,
+                            please check with all of them, as only the "primary"
+                            unit counts, and it's not always clear which one is
+                            primary.<br><br>We last checked your status in the
+                            BSA database on <?php esc_html_e($bsa_verify_date);
+                            break;
+                        case "BSA ID Not Found":
+                            ?><span class="oalm_dues_bad">Our most recent audit
+                            could not find you in the BSA database.</span><br>We
+                            last attempted to find you on <?php
+                            esc_html_e($bsa_verify_date) ?>. If you
+                            <strong>are</strong> currently a member of a Scouting unit,
+                            please have your unit chairperson check to make sure
+                            your registration has been properly submitted to the
+                            council. If you are a member of more than one unit,
+                            please check with all of them, as only the "primary"
+                            unit counts, and it's not always clear which one is
+                            primary.<?php
+                            break;
+                        case "BSA ID Found - Data Mismatch":
+                            ?><span class="oalm_dues_bad">Your BSA registration exists
+                            in the BSA database, but one or more other data points do
+                            not match.</span><br><br>This means the information we have
+                            on file for you in the OA database does not match what is
+                            in the BSA database. Please check with your unit committee
+                            chairperson or advancement chairperson to verify how they
+                            have you listed on the unit roster. The items which matter
+                            are:<ol><li>the spelling, spacing, and punctuation of your last
+                            name,</li><li>your birth date,</li><li>your gender,
+                            and</li><li>your BSA Member ID.</li></ol>Once you've
+                            verified this information, please submit it to us by using the
+                            "<?php echo htmlspecialchars(get_option('oadueslookup_update_option_text')) ?>"
+                            option on the
+                            <a href="<?php echo htmlspecialchars(get_option('oadueslookup_update_url')) ?>">
+                                <?php echo htmlspecialchars(get_option('oadueslookup_update_option_link_text')) ?>
+                            </a>
+                            <?php
+                            break;
+                        case "Never Run":
+                            ?>This means one of the following things:<ul>
+                            <li>You're new, and we haven't run a new audit against
+                            the BSA database since you were put in the OA
+                            database</li> <li>Your BSA Member ID was just recently
+                            added to the OA database, and a new audit hasn't been
+                            run yet.</li> <li>You haven't paid dues in over 3
+                            years, so we didn't include you in the audit because we
+                            thought you were inactive.</li></ul> <?php
+                            break;
+                    }
                 }
                 ?></td></tr>
                 </table><?php
@@ -164,7 +184,7 @@ pay them <a href="<?php echo get_option('oadueslookup_dues_url') ?>">here</a>.</
 </form>
 <br>
 <p>You can find your Member ID at the bottom of your blue BSA Membership card:</p>
-<p><img src="<?php echo plugins_url("BSAMemberCard.png", __FILE__) ?>" alt="Membership Card" style="border: 1px solid #ccc;"></p>
+<p><img src="<?php echo plugins_url("../BSAMemberCard.png", __FILE__) ?>" alt="Membership Card" style="border: 1px solid #ccc;"></p>
 <p>If you can't find your membership card, your unit committee chairperson should be able to look it up on your unit recharter document, or your advancement chairperson can look it up in the Online Advancement System.</p>
 <p>If you just came here to update your contact information, <a href="<?php echo htmlspecialchars(get_option('oadueslookup_update_url')) ?>">click here</a>.</p>
 <?php
@@ -172,8 +192,8 @@ pay them <a href="<?php echo get_option('oadueslookup_dues_url') ?>">here</a>.</
     return ob_get_clean();
 }
 
-function oadueslookup_url_handler( &$wp ) {
-    if($wp->request == get_option('oadueslookup_slug')) {
+function oadueslookup_url_handler(&$wp) {
+    if ($wp->request == get_option('oadueslookup_slug')) {
         # http://stackoverflow.com/questions/17960649/wordpress-plugin-generating-virtual-pages-and-using-theme-template
         # Note that we don't need to do a template redirect as suggesting in
         # the example because all we do is load the template anyway. We can let
@@ -189,7 +209,7 @@ function oadueslookup_dummypost($posts) {
     // don't call the_content filter
     global $wp, $wp_query;
 
-    //create a fake post intance
+    //create a fake post instance
     $p = new stdClass;
     // fill $p with everything a page in the database would have
     $p->ID = -1;
@@ -219,15 +239,15 @@ function oadueslookup_dummypost($posts) {
     $p->ancestors = array(); // 3.6
 
     // reset wp_query properties to simulate a found page
-    $wp_query->is_page = TRUE;
-    $wp_query->is_singular = TRUE;
-    $wp_query->is_home = FALSE;
-    $wp_query->is_archive = FALSE;
-    $wp_query->is_category = FALSE;
+    $wp_query->is_page = true;
+    $wp_query->is_singular = true;
+    $wp_query->is_home = false;
+    $wp_query->is_archive = false;
+    $wp_query->is_category = false;
     unset($wp_query->query['error']);
     $wp->query = array();
     $wp_query->query_vars['error'] = '';
-    $wp_query->is_404 = FALSE;
+    $wp_query->is_404 = false;
 
     $wp_query->current_post = $p->ID;
     $wp_query->found_posts = 1;

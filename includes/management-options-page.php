@@ -42,7 +42,7 @@ if (isset($_FILES['oalm_file'])) {
     #echo "<strong>Type:</strong> " . esc_html($_FILES['oalm_file']['type']) . "<br>";
     if (preg_match('/\.xlsx$/',$_FILES['oalm_file']['name'])) {
 
-        require_once plugin_dir_path( __FILE__ ) . 'vendor/autoload.php';
+        require_once plugin_dir_path( __FILE__ ) . '../vendor/autoload.php';
         #use PhpOffice\PhpSpreadsheet\Spreadsheet;
         #use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
@@ -52,12 +52,14 @@ if (isset($_FILES['oalm_file'])) {
         $objSpreadsheet = $objReader->load($_FILES["oalm_file"]["tmp_name"]);
         $objWorksheet = $objSpreadsheet->getActiveSheet();
         $columnMap = array(
-            'BSA ID'            => 'bsaid',
-            'Dues Yr.'          => 'max_dues_year',
-            'Dues Pd. Dt.'      => 'dues_paid_date',
-            'Level'             => 'level',
-            'Reg. Audit Date'   => 'reg_audit_date',
-            'Reg. Audit Result' => 'reg_audit_result',
+            'BSA ID'                => 'bsaid',
+            'Dues Yr.'              => 'max_dues_year',
+            'Dues Pd. Dt.'          => 'dues_paid_date',
+            'Level'                 => 'level',
+            'BSA Reg.'              => 'bsa_reg',
+            'BSA Reg. Overidden'    => 'bsa_reg_overridden',
+            'BSA Verify Date'       => 'bsa_verify_date',
+            'BSA Verify Status'     => 'bsa_verify_status',
         );
         $complete = 0;
         $recordcount = 0;
@@ -104,13 +106,13 @@ if (isset($_FILES['oalm_file'])) {
                 foreach ($cellIterator as $cell) {
                     $columnName = $objWorksheet->getCell($cell->getColumn() . "1")->getValue();
                     $value = "";
-                    if ($columnName == "Dues Pd. Dt.") {
+                    if ($columnName === "Dues Pd. Dt.") {
                         # this is a date field, and we have to work miracles to turn it into a mysql-compatible date
                         $date = $cell->getValue();
                         $dateint = intval($date);
                         $dateintVal = (int) $dateint;
                         $value = \PhpOffice\PhpSpreadsheet\Style\NumberFormat::toFormattedString($dateintVal, "YYYY-MM-DD");
-                    } else if ($columnName == "Reg. Audit Date") {
+                    } elseif ($columnName === "BSA Verify Date") {
                         # this is also a date field, but can be empty
                         $date = $cell->getValue();
                         if (!$date) {
@@ -127,7 +129,7 @@ if (isset($_FILES['oalm_file'])) {
                         $rowData[$columnMap[$columnName]] = $value;
                     }
                 }
-                if ($wpdb->insert($dbprefix . "dues_data", $rowData, array('%s','%s','%s','%s','%s'))) {
+                if ($wpdb->insert($dbprefix . "dues_data", $rowData, array('%s','%s','%s','%s','%d','%d','%s','%s'))) {
                     $recordcount++;
                 }
             }
@@ -251,14 +253,14 @@ if (isset($_FILES['oalm_file'])) {
 
 <h3 class="oalm">Import data from OALM</h3>
 <p>Export file from OALM Must contain at least the following columns:<br>
-BSA ID, Dues Yr., Dues Pd. Dt., Level, Reg. Audit Date, Reg. Audit Result<br>
+BSA ID, Dues Yr., Dues Pd. Dt., Level, BSA Reg., BSA Reg. Overidden, BSA Verify Date, BSA Verify Status<br>
 Any additional columns will be ignored.</p>
 <p><a href="http://github.com/justdave/oadueslookup/wiki">How to create the export file in OALM</a></p>
 <form action="" method="post" enctype="multipart/form-data">
 <label for="oalm_file">Click Browse, then select the xlsx file exported from OALM's "Export Members", then click "Upload":</label><br>
 <input type="file" name="oalm_file" id="oalm_file" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
 <input type="submit" class="button button-primary" name="submit" value="Upload"><br>
-<p><strong>Last import:</strong> <?php 
+<p><strong>Last import:</strong> <?php
     $last_import = get_option('oadueslookup_last_import');
     if ($last_import == '1900-01-01') { echo "Never"; }
     else { esc_html_e($last_import); }

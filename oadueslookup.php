@@ -7,6 +7,8 @@
  * Author: Dave Miller
  * Author URI: http://twitter.com/justdavemiller
  * Author Email: github@justdave.net
+ * GitHub URI: https://github.com/oa-bsa/dues-lookup
+ * Release Asset: true
  * */
 
 /*
@@ -27,34 +29,19 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+include_once( __DIR__ . '/vendor/autoload.php' );
+WP_Dependency_Installer::instance()->run( __DIR__ );
 add_action('admin_menu', 'oadueslookup_plugin_menu');
 add_action('parse_request', 'oadueslookup_url_handler');
 add_action('plugins_loaded', 'oadueslookup_update_db_check');
 register_activation_hook(__FILE__, 'oadueslookup_install');
 register_activation_hook(__FILE__, 'oadueslookup_install_data');
 add_action('wp_enqueue_scripts', 'oadueslookup_enqueue_css');
-add_action('init', 'oadueslookup_plugin_updater_init');
 
 function oadueslookup_enqueue_css()
 {
     wp_register_style('oadueslookup-style', plugins_url('style.css', __FILE__));
     wp_enqueue_style('oadueslookup-style');
-}
-
-function oadueslookup_plugin_updater_init()
-{
-    /* Load Plugin Updater */
-    require_once(trailingslashit(plugin_dir_path(__FILE__)) . 'includes/plugin-updater.php');
-
-    /* Updater Config */
-    $config = array(
-        'base'      => plugin_basename(__FILE__), //required
-        'repo_uri'  => 'http://www.justdave.net/dave/',
-        'repo_slug' => 'oadueslookup',
-    );
-
-    /* Load Updater Class */
-    new OADuesLookup_Plugin_Updater($config);
 }
 
 global $oadueslookup_db_version;

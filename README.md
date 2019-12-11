@@ -33,6 +33,8 @@ https://github.com/PHPOffice/PhpSpreadsheet
 1. Activate the plugin through the "Plugins" menu in WordPress.
 1. Go to "OA Dues Lookup" under "Settings" to find the settings and to upload data.
 
+**NOTE:** if you do a git check out from GitHub or download the source Zip file, you will need to run `composer install` inside the oadueslookup directory to install the dependencies before you can use it.
+
 ## Changelog
 
 ### 2.0.0

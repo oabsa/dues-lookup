@@ -22,6 +22,26 @@ function oadueslookup_plugin_menu()
     add_options_page('OA Dues Lookup', 'OA Dues Lookup', 'manage_options', 'oadueslookup', 'oadueslookup_options');
 }
 
+add_action( 'admin_notices', 'oadueslookup_admin_notices' );
+function oadueslookup_admin_notices() {
+    $lookup_slug = get_option('oadueslookup_oldslug', 'it was not set');
+    if (!($lookup_slug == 'it was not set')) {
+        ?><div class="updated">
+        <div>
+        <p>Your OA Dues Lookup page at <a href="<?php echo esc_html(get_option("home")) . "/" . esc_html($lookup_slug) ?>"><?php echo esc_html(get_option("home")) . "/" . esc_html($lookup_slug) ?></a> was converted from a specially-handled URL to a real WordPress Page, which contains the <code>[oadueslookup]</code> shortcode for the form. You can now use that shortcode on any page to show the dues lookup form.</p>
+        </div>
+        <div style="float: right;"><a href="?dismiss=oadl_shortcode_update">Dismiss</a></div>
+        <div style="clear: both;"></div>
+        </div><?php
+    }
+}
+add_action( 'admin_init', 'oadueslookup_dismiss_admin_notices' );
+function oadueslookup_dismiss_admin_notices() {
+    if ( isset( $_GET['dismiss'] ) && 'oadl_shortcode_update' == $_GET['dismiss'] ) {
+        delete_option('oadueslookup_oldslug');
+    }
+}
+
 function oadueslookup_options()
 {
 
@@ -155,7 +175,6 @@ function oadueslookup_options()
     //
 
     if (isset($_POST[ $hidden_field_name ]) && $_POST[ $hidden_field_name ] == 'oadueslookup-settings') {
-        $slug = $_POST['oadueslookup_slug'];
         $dues_url = $_POST['oadueslookup_dues_url'];
         $max_dues_year = $_POST['oadueslookup_max_dues_year'];
         $dues_register = $_POST['oadueslookup_dues_register'];
@@ -172,12 +191,6 @@ function oadueslookup_options()
             ?><div class="error"><p><strong>'<?php esc_html_e($help_email); ?>' is not a valid email address.</strong></p></div><?php
         } else {
             $foundchanges = 0;
-            $slug = sanitize_title($slug);
-            if ($slug != get_option('oadueslookup_slug')) {
-                update_option('oadueslookup_slug', $slug);
-                $foundchanges = 1;
-            }
-
             $dues_url = esc_url_raw($dues_url);
             if ($dues_url != get_option('oadueslookup_dues_url')) {
                 update_option('oadueslookup_dues_url', $dues_url);
@@ -268,16 +281,11 @@ if ($last_import == '1900-01-01') {
 ?></p>
 </form>
 <h3 class="oalm">Lookup Page Settings</h3>
+<p>Add the dues lookup form to any page with the shortcode <code>[oadueslookup]</code>.</p>
 <form name="oadueslookup-settings" method="post" action="">
 <input type="hidden" name="<?php echo $hidden_field_name; ?>" value="oadueslookup-settings">
 <table class="form-table">
 <tbody>
-<tr>
-  <th scope="row"><label for="oadueslookup_slug">Dues Page Slug</label></th>
-  <td><code><?php echo esc_html(get_option("home")); ?>/</code><input id="oadueslookup_slug" name="oadueslookup_slug" class="regular-text code" type="text" value="<?php echo esc_html(get_option("oadueslookup_slug")); ?>">
-  <p class="description">The name appended to your Site URL to reach the lookup page.</p>
-  </td>
-</tr>
 <tr>
   <th scope="row"><label for="oadueslookup_dues_url">Dues Payment URL</label></th>
   <td><input id="oadueslookup_dues_url" name="oadueslookup_dues_url" class="regular-text code" type="text" value="<?php echo esc_html(get_option("oadueslookup_dues_url")); ?>">

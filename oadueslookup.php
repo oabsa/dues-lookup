@@ -178,7 +178,7 @@ function oadueslookup_update_shortcodes()
     # In version 2.1, we replaced the URL trap with a shortcode.
     # This code converts from the old way to the new way.
     $lookup_slug = get_option('oadueslookup_slug', 'it was not set');
-    if (!($lookup_slug == 'it was not set')) {
+    if (!($lookup_slug === 'it was not set')) {
         $post = wp_insert_post(array(
             'post_type' => 'page',
             'post_name' => $lookup_slug,

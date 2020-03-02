@@ -25,7 +25,7 @@ function oadueslookup_plugin_menu()
 add_action( 'admin_notices', 'oadueslookup_admin_notices' );
 function oadueslookup_admin_notices() {
     $lookup_slug = get_option('oadueslookup_oldslug', 'it was not set');
-    if (!($lookup_slug == 'it was not set')) {
+    if (!($lookup_slug === 'it was not set')) {
         ?><div class="updated">
         <div>
         <p>Your OA Dues Lookup page at <a href="<?php echo esc_html(get_option("home")) . "/" . esc_html($lookup_slug) ?>"><?php echo esc_html(get_option("home")) . "/" . esc_html($lookup_slug) ?></a> was converted from a specially-handled URL to a real WordPress Page, which contains the <code>[oadueslookup]</code> shortcode for the form. You can now use that shortcode on any page to show the dues lookup form.</p>
@@ -37,7 +37,7 @@ function oadueslookup_admin_notices() {
 }
 add_action( 'admin_init', 'oadueslookup_dismiss_admin_notices' );
 function oadueslookup_dismiss_admin_notices() {
-    if ( isset( $_GET['dismiss'] ) && 'oadl_shortcode_update' == $_GET['dismiss'] ) {
+    if ( array_key_exists( 'dismiss', $_GET ) && 'oadl_shortcode_update' === $_GET['dismiss'] ) {
         delete_option('oadueslookup_oldslug');
     }
 }

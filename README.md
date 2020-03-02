@@ -32,6 +32,7 @@ https://github.com/PHPOffice/PhpSpreadsheet
 1. Place the unpacked "oadueslookup" directory in the "/wp-content/plugins/" directory.
 1. Activate the plugin through the "Plugins" menu in WordPress.
 1. Go to "OA Dues Lookup" under "Settings" to find the settings and to upload data.
+1. Put the `[oadueslookup]` shortcode on the page you want the lookup form to appear on.
 
 **NOTE:** if you do a git check out from GitHub or download the source Zip file, you will need to run `composer install` inside the oadueslookup directory to install the dependencies before you can use it.
 

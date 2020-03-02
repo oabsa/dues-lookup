@@ -17,7 +17,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-function oadueslookup_user_page(&$wp)
+add_shortcode( 'oadueslookup', 'oadueslookup_user_page' );
+
+function oadueslookup_user_page($attr)
 {
     global $wpdb;
     $dbprefix = $wpdb->prefix . "oalm_";
@@ -192,81 +194,3 @@ if ($bsa_reg == "Registered") {
     }
     return ob_get_clean();
 }
-
-function oadueslookup_url_handler(&$wp)
-{
-    if ($wp->request == get_option('oadueslookup_slug')) {
-        # http://stackoverflow.com/questions/17960649/wordpress-plugin-generating-virtual-pages-and-using-theme-template
-        # Note that we don't need to do a template redirect as suggesting in
-        # the example because all we do is load the template anyway. We can let
-        # the real template code work like it's supposed to and only override
-        # the content.
-        add_filter('the_posts', 'oadueslookup_dummypost');
-        remove_filter('the_content', 'wpautop');
-    }
-}
-
-function oadueslookup_dummypost($posts)
-{
-    // have to create a dummy post as otherwise many templates
-    // don't call the_content filter
-    global $wp, $wp_query;
-
-    //create a fake post instance
-    $p = new stdClass;
-    // fill $p with everything a page in the database would have
-    $p->ID = -1;
-    $p->post_author = 1;
-    $p->post_date = current_time('mysql');
-    $p->post_date_gmt =  current_time('mysql', $gmt = 1);
-    $p->post_content = oadueslookup_user_page($wp);
-    $p->post_title = 'Lodge Dues Status';
-    $p->post_excerpt = '';
-    $p->post_status = 'publish';
-    $p->ping_status = 'closed';
-    $p->post_password = '';
-    $p->post_name = get_option('oadueslookup_slug');
-    $p->to_ping = '';
-    $p->pinged = '';
-    $p->modified = $p->post_date;
-    $p->modified_gmt = $p->post_date_gmt;
-    $p->post_content_filtered = '';
-    $p->post_parent = 0;
-    $p->guid = get_home_url('/' . $p->post_name); // use url instead?
-    $p->menu_order = 0;
-    $p->post_type = 'page';
-    $p->post_mime_type = '';
-    $p->comment_status = 'closed';
-    $p->comment_count = 0;
-    $p->filter = 'raw';
-    $p->ancestors = array(); // 3.6
-
-    // reset wp_query properties to simulate a found page
-    $wp_query->is_page = true;
-    $wp_query->is_singular = true;
-    $wp_query->is_home = false;
-    $wp_query->is_archive = false;
-    $wp_query->is_category = false;
-    unset($wp_query->query['error']);
-    $wp->query = array();
-    $wp_query->query_vars['error'] = '';
-    $wp_query->is_404 = false;
-
-    $wp_query->current_post = $p->ID;
-    $wp_query->found_posts = 1;
-    $wp_query->post_count = 1;
-    $wp_query->comment_count = 0;
-    // -1 for current_comment displays comment if not logged in!
-    $wp_query->current_comment = null;
-    $wp_query->is_singular = 1;
-
-    $wp_query->post = $p;
-    $wp_query->posts = array($p);
-    $wp_query->queried_object = $p;
-    $wp_query->queried_object_id = $p->ID;
-    $wp_query->current_post = $p->ID;
-    $wp_query->post_count = 1;
-
-    return array($p);
-}
-

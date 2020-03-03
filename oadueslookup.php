@@ -130,7 +130,7 @@ function oadueslookup_install()
         $wpdb->query("ALTER TABLE ${dbprefix}dues_data ADD COLUMN reg_audit_date DATE");
     }
 
-    if ($installed_version >= 2 && $installed_version < 3) {
+    if ($installed_version < 3) {
         # Drop the old registration audit fields for OALM 4.1.2 or below.
         $wpdb->query("ALTER TABLE ${dbprefix}dues_data DROP COLUMN reg_audit_date");
         $wpdb->query("ALTER TABLE ${dbprefix}dues_data DROP COLUMN reg_audit_result");

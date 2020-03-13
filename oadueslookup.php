@@ -3,10 +3,14 @@
  * Plugin Name: OA Dues Lookup
  * Plugin URI: https://github.com/oa-bsa/dues-lookup/
  * Description: Wordpress plugin to use in conjunction with OA LodgeMaster to allow members to look up when they last paid dues
- * Version: 2.0.0
+ * Version: 2.1.0
+ * Requires at least: 3.0.1
+ * Requires PHP: 7.1
  * Author: Dave Miller
  * Author URI: http://twitter.com/justdavemiller
  * Author Email: github@justdave.net
+ * GitHub URI: https://github.com/oa-bsa/dues-lookup
+ * Release Asset: true
  * */
 
 /*
@@ -27,34 +31,19 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+include_once( __DIR__ . '/vendor/autoload.php' );
+WP_Dependency_Installer::instance()->run( __DIR__ );
 add_action('admin_menu', 'oadueslookup_plugin_menu');
-add_action('parse_request', 'oadueslookup_url_handler');
 add_action('plugins_loaded', 'oadueslookup_update_db_check');
+add_action('wp_loaded', 'oadueslookup_update_shortcodes');
 register_activation_hook(__FILE__, 'oadueslookup_install');
 register_activation_hook(__FILE__, 'oadueslookup_install_data');
 add_action('wp_enqueue_scripts', 'oadueslookup_enqueue_css');
-add_action('init', 'oadueslookup_plugin_updater_init');
 
 function oadueslookup_enqueue_css()
 {
     wp_register_style('oadueslookup-style', plugins_url('style.css', __FILE__));
     wp_enqueue_style('oadueslookup-style');
-}
-
-function oadueslookup_plugin_updater_init()
-{
-    /* Load Plugin Updater */
-    require_once(trailingslashit(plugin_dir_path(__FILE__)) . 'includes/plugin-updater.php');
-
-    /* Updater Config */
-    $config = array(
-        'base'      => plugin_basename(__FILE__), //required
-        'repo_uri'  => 'http://www.justdave.net/dave/',
-        'repo_slug' => 'oadueslookup',
-    );
-
-    /* Load Updater Class */
-    new OADuesLookup_Plugin_Updater($config);
 }
 
 global $oadueslookup_db_version;
@@ -143,7 +132,7 @@ function oadueslookup_install()
         $wpdb->query("ALTER TABLE ${dbprefix}dues_data ADD COLUMN reg_audit_date DATE");
     }
 
-    if ($installed_version >= 2 && $installed_version < 3) {
+    if ($installed_version < 3) {
         # Drop the old registration audit fields for OALM 4.1.2 or below.
         $wpdb->query("ALTER TABLE ${dbprefix}dues_data DROP COLUMN reg_audit_date");
         $wpdb->query("ALTER TABLE ${dbprefix}dues_data DROP COLUMN reg_audit_result");
@@ -173,7 +162,6 @@ function oadueslookup_update_db_check()
     # need to be created if they don't exist when the plugin gets upgraded,
     # too, not just on a new install.  add_option does nothing if the option
     # already exists, sets default value if it does not.
-    add_option('oadueslookup_slug', 'oadueslookup');
     add_option('oadueslookup_dues_url', 'http://www.example.tld/paydues');
     add_option('oadueslookup_dues_register', '1');
     add_option('oadueslookup_dues_register_msg', 'You must register and login on the MyCouncil site before paying dues.');
@@ -184,6 +172,27 @@ function oadueslookup_update_db_check()
     add_option('oadueslookup_last_import', '1900-01-01');
     add_option('oadueslookup_last_update', '1900-01-01');
     add_option('oadueslookup_max_dues_year', '2016');
+
+}
+
+function oadueslookup_update_shortcodes()
+{
+    # In version 2.1, we replaced the URL trap with a shortcode.
+    # This code converts from the old way to the new way.
+    $lookup_slug = get_option('oadueslookup_slug', 'it was not set');
+    if (!($lookup_slug === 'it was not set')) {
+        $post = wp_insert_post(array(
+            'post_type' => 'page',
+            'post_name' => $lookup_slug,
+            'post_title' => 'OA Dues Lookup',
+            'post_content' => "<!-- wp:shortcode -->\n" .
+                              "[oadueslookup]\n" .
+                              "<!-- /wp:shortcode -->\n"
+        ));
+        delete_option('oadueslookup_slug');
+        add_option('oadueslookup_oldslug', $lookup_slug);
+    }
+
 }
 
 function oadueslookup_insert_sample_data()

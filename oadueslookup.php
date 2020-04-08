@@ -184,6 +184,7 @@ function oadueslookup_update_shortcodes()
         $post = wp_insert_post(array(
             'post_type' => 'page',
             'post_name' => $lookup_slug,
+            'post_status' => 'publish',
             'post_title' => 'OA Dues Lookup',
             'post_content' => "<!-- wp:shortcode -->\n" .
                               "[oadueslookup]\n" .

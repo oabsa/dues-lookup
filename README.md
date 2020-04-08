@@ -43,7 +43,12 @@ https://github.com/PHPOffice/PhpSpreadsheet
 
 ## Changelog
 
+### 2.1.1
+
+* Fixes a bug in the upgrade process from 2.0.0->2.1.0 where the newly created page was created as a draft instead of published (if you already upgraded to 2.1.0 this won't have any effect and the damage was already done)
+
 ### 2.1.0
+
 * Lots of code cleanup on the back end.
 * Changed the update mechanism to use GitHub Updater instead of Autohosted.
 * Uses a shortcode to place the dues lookup form instead of creating a fake page at a configured URL. A page containing the shortcode at the URL you previously configured will automatically be created when upgrading from an older version.

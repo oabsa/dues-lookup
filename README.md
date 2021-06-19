@@ -49,6 +49,11 @@ This plugin embeds the [PhpSpreadsheet library](https://github.com/PHPOffice/Php
 
 ## Changelog
 
+### 2.1.3
+
+* Git Updater was choking on the primary branch not being "master" (it's "main") in our git repo.
+* You may have to download this update manually because of this, but it should work from now on.
+
 ### 2.1.2
 
 * Fixes a dependency issue with GitHub Updater (it was renamed to Git Updater)

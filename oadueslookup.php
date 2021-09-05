@@ -34,7 +34,6 @@
 
 include_once( __DIR__ . '/vendor/autoload.php' );
 WP_Dependency_Installer::instance()->run( __DIR__ );
-add_action('admin_menu', 'oadueslookup_plugin_menu');
 add_action('plugins_loaded', 'oadueslookup_update_db_check');
 add_action('wp_loaded', 'oadueslookup_update_shortcodes');
 register_activation_hook(__FILE__, 'oadueslookup_install');

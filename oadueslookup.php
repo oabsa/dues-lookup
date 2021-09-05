@@ -248,6 +248,8 @@ function oadueslookup_dismiss_admin_notices() {
 # This code is designed to be used in any OA-related plugin. It conditionally
 # Adds an "OA Tools" top-level menu in the WP Admin if it doesn't already
 # exist. Any OA-related plugins can then add submenus to it.
+# NOTE: if you copy this to another plugin, you also need to copy the
+# referenced SVG file.
 
 if (!function_exists('oa_tools_add_menu')) {
     add_action( 'admin_menu', 'oa_tools_add_menu', 9 );

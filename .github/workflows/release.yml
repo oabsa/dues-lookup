@@ -1,0 +1,29 @@
+on:
+  release:
+    types:
+      - published
+name: Build & Release
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - uses: php-actions/composer@v6
+      with:
+        php_version: 7.3
+        php_extensions: gd zip
+    - uses: WyriHaximus/github-action-get-previous-tag@v1
+      id: lasttag
+    - uses: thedoctor0/zip-release@master
+      with:
+        type: 'zip'
+        filename: "dues-lookup-${{ steps.lasttag.outputs.tag }}.zip"
+    - uses: ncipollo/release-action@v1
+      with:
+        allowUpdates: true
+        omitBodyDuringUpdate: true
+        omitNameDuringUpdate: true
+        omitPrereleaseDuringUpdate: true
+        tag: ${{ steps.lasttag.outputs.tag }}
+        artifacts: "dues-lookup-${{ steps.lasttag.outputs.tag }}.zip"
+        token: ${{ secrets.GITHUB_TOKEN }}

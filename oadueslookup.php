@@ -5,7 +5,7 @@
  * Description: Wordpress plugin to use in conjunction with OA LodgeMaster to allow members to look up when they last paid dues
  * Version: 2.1.3
  * Requires at least: 3.0.1
- * Requires PHP: 7.1
+ * Requires PHP: 7.3
  * Author: Dave Miller
  * Author URI: http://twitter.com/justdavemiller
  * Author Email: github@justdave.net

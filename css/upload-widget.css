@@ -1,0 +1,32 @@
+.upload-area{
+    width: 500px;
+    max-width: 500px;
+    height: 200px;
+    border: 2px dashed lightgray;
+    border-radius: 3px;
+    margin: 0 auto;
+    margin-top: 100px;
+    text-align: center;
+    vertical-align: middle;
+    overflow: auto;
+    display: table-cell;
+    cursor: pointer;
+}
+
+.upload-area #grys_drop_text {
+    text-align: center;
+    vertical-align: middle;
+    font-weight: normal;
+    font-family: sans-serif;
+    font-size: large;
+    line-height: 50px;
+    pointer-events: none;
+    color: darkslategray;
+}
+.upload-area #grys_drop_text img {
+    vertical-align: middle;
+}
+
+#oalm_file, #oalm_drop_progressBar, #oalm_drop_processBar, #oalm_drop_status, #oalm_drop_filename {
+    display: none;
+}

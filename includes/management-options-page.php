@@ -51,6 +51,7 @@ function oadueslookup_options()
         $update_link_text = $_POST['oadueslookup_update_option_link_text'];
         $update_option_text = $_POST['oadueslookup_update_option_text'];
         $help_email = $_POST['oadueslookup_help_email'];
+        $use_cron = $_POST['oadueslookup_use_cron'];
 
         # $help_email is the only one that throws an error if it doesn't
         # validate.  The others we just silently fix so they're something
@@ -103,6 +104,11 @@ function oadueslookup_options()
             $help_email = sanitize_email($help_email);
             if ($help_email != get_option('oadueslookup_help_email')) {
                 update_option('oadueslookup_help_email', $help_email);
+                $foundchanges = 1;
+            }
+
+            if ($use_cron != get_option('oadueslookup_use_cron')) {
+                update_option('oadueslookup_use_cron', $use_cron);
                 $foundchanges = 1;
             }
 
@@ -183,6 +189,16 @@ function oadueslookup_options()
   <td><input id="oadueslookup_help_email" name="oadueslookup_help_email" class="regular-text code" type="text" value="<?php echo esc_html(get_option("oadueslookup_help_email")); ?>">
   <p class="description">The email address for members to ask questions.</p>
   </td>
+</tr>
+<tr>
+    <th scope="row"><label for="oadueslookup_use_cron">Use Cron?</label></th>
+    <td><input id="oadueslookup_use_cron" name="oadueslookup_use_cron" class="code" type="checkbox" value="1"<?php checked(1 == esc_html(get_option('oadueslookup_use_cron'))); ?>">
+        <p class="description">If this is NOT checked (the default), WordPress will attempt to immediately trigger processing of uploaded dues data after the file is uploaded. This is the fastest way to process the data, however, if you have a large dataset which takes longer than your server's execution timeout (your PHP is configured for <?php echo ini_get('max_execution_time'); ?> seconds, but web servers often enforce 30 seconds), this will fail and leave your data incomplete. If you find this happening a lot, you should check this box, and create a cron job on your server to trigger the data processing.</p>
+        <p class="description">Example cron job:</p>
+        <p class="description"><code>*/5 * * * * [ -f "<?php echo wp_upload_dir()['basedir']; ?>/dues-lookup/import.xlsx" ] &amp;&amp; /path/to/php "<?php echo realpath(dirname(__FILE__) . '/../bin/dues-import-processor.php') ?>"</code></p>
+        <p class="description">Be sure to replace <code>/path/to/php</code> with the actual path to the php binary that matches the version WordPress is running under (<?php echo PHP_VERSION; ?>).</p>
+        <p class="description">The script will exit without doing anything if it's already running.</p>
+    </td>
 </tr>
 </tbody>
 </table>

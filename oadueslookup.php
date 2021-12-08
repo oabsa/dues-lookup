@@ -172,6 +172,24 @@ function oadueslookup_update_db_check()
     add_option('oadueslookup_last_import', '1900-01-01');
     add_option('oadueslookup_last_update', '1900-01-01');
     add_option('oadueslookup_max_dues_year', '2016');
+    add_option('oadueslookup_use_cron', false);
+    add_option('oadueslookup_import_status', [
+        'status' => 'waiting',
+        'progress' => '0',
+        'output' => ''
+    ]);
+
+    //
+    // CREATE TEMPDIR FOR IMPORTS
+    // (need to make sure this always exists as well)
+    $dir = wp_upload_dir()['basedir'] . "/dues-lookup/";
+    $created = wp_mkdir_p($dir);
+    if ($created) {
+        // drop an .htaccess in to keep browsers out
+        $htaccess = @fopen($dir . '.htaccess', "w");
+        fwrite($htaccess, 'deny from all');
+        fclose($htaccess);
+    }
 
 }
 

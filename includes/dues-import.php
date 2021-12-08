@@ -22,6 +22,20 @@ function oadueslookup_add_import_menu() {
     add_submenu_page( "oa_tools", "Import Dues", "Import Dues", "manage_options", 'oadueslookup_import', 'oadueslookup_import', 50 );
 }
 
+add_action( 'admin_enqueue_scripts', 'oadueslookup_admin_enqueue_scripts' );
+function oadueslookup_admin_enqueue_scripts() {
+    $screen = get_current_screen();
+    if ($screen->id == 'oa-tools_page_oadueslookup_import') {
+        wp_enqueue_script('oalm-upload-widget-js', plugins_url('js/upload-widget.js?v=1', dirname(__FILE__)));
+        wp_enqueue_style( 'oalm-upload-widget-css', plugins_url('css/upload-widget.css?v=1', dirname(__FILE__)));
+        wp_localize_script( 'oalm-upload-widget-js', 'oalm', array(
+            'wp_ajax_url' => admin_url( 'admin-ajax.php' ),
+            'wp_site_url' => site_url(),
+            'wp_admin_email' => get_bloginfo('admin_email','display')
+        ));
+    }
+}
+
 function oadueslookup_import()
 {
 
@@ -32,122 +46,6 @@ function oadueslookup_import()
 
     if (!current_user_can('manage_options')) {
         wp_die(__('You do not have sufficient permissions to access this page.'));
-    }
-
-    // =========================
-    // form processing code here
-    // =========================
-
-    if (isset($_FILES['oalm_file'])) {
-        #echo "<h3>Processing file upload</h3>";
-        #echo "<strong>Processing File:</strong> " . esc_html($_FILES['oalm_file']['name']) . "<br>";
-        #echo "<strong>Type:</strong> " . esc_html($_FILES['oalm_file']['type']) . "<br>";
-        if (preg_match('/\.xlsx$/', $_FILES['oalm_file']['name'])) {
-            require_once plugin_dir_path(__FILE__) . '../vendor/autoload.php';
-            #use PhpOffice\PhpSpreadsheet\Spreadsheet;
-            #use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-
-            $objReader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
-            $objReader->setReadDataOnly(true);
-            $objReader->setLoadSheetsOnly(array("All"));
-            $objSpreadsheet = $objReader->load($_FILES["oalm_file"]["tmp_name"]);
-            $objWorksheet = $objSpreadsheet->getActiveSheet();
-            $columnMap = array(
-            'BSA ID'                => 'bsaid',
-            'Dues Yr.'              => 'max_dues_year',
-            'Dues Pd. Dt.'          => 'dues_paid_date',
-            'Level'                 => 'level',
-            'BSA Reg.'              => 'bsa_reg',
-            'BSA Reg. Overidden'    => 'bsa_reg_overridden',
-            'BSA Verify Date'       => 'bsa_verify_date',
-            'BSA Verify Status'     => 'bsa_verify_status',
-            );
-            $complete = 0;
-            $recordcount = 0;
-            $error_output = "";
-            foreach ($objWorksheet->getRowIterator() as $row) {
-                $rowData = array();
-                if ($row->getRowIndex() == 1) {
-                    # this is the header row, grab the headings
-                    $cellIterator = $row->getCellIterator();
-                    $cellIterator->setIterateOnlyExistingCells(false);
-                    foreach ($cellIterator as $cell) {
-                        $cellValue = $cell->getValue();
-                        if (isset($columnMap[$cellValue])) {
-                            $rowData[$columnMap[$cellValue]] = 1;
-                            #echo "Found column " . htmlspecialchars($cell->getColumn()) . " with title '" . htmlspecialchars($cellValue) . "'<br>" . PHP_EOL;
-                        } else {
-                            #echo "Discarding unknown column " . htmlspecialchars($cell->getColumn()) . " with title '" . htmlspecialchars($cellValue) . "'<br>" . PHP_EOL;
-                        }
-                    }
-                    $missingColumns = array();
-                    foreach ($columnMap as $key => $value) {
-                        if (!isset($rowData[$value])) {
-                            $missingColumns[] = $key;
-                        }
-                    }
-                    if ($missingColumns) {
-                        ?><div class="error"><p><strong>Import failed.</strong></p><p>Missing required columns: <?php esc_html_e(implode(", ", $missingColumns)) ?></div><?php
-                    $complete = 1; # Don't show "may have failed" box at the bottom
-                    break;
-                    } else {
-                        #echo "<strong>Data format validated:</strong> Importing new data...<br>" . PHP_EOL;
-                        # we just validated that we have a good data file, nuke the existing data
-                        $wpdb->show_errors();
-                        ob_start();
-                        $wpdb->query("TRUNCATE TABLE ${dbprefix}dues_data");
-                        update_option('oadueslookup_last_import', $wpdb->get_var("SELECT DATE_FORMAT(NOW(), '%Y-%m-%d')"));
-                        # re-insert the test data
-                        oadueslookup_insert_sample_data();
-                        # now we're ready for the incoming from the rest of the file.
-                    }
-                } else {
-                    $cellIterator = $row->getCellIterator();
-                    $cellIterator->setIterateOnlyExistingCells(false);
-                    foreach ($cellIterator as $cell) {
-                        $columnName = $objWorksheet->getCell($cell->getColumn() . "1")->getValue();
-                        $value = "";
-                        if ($columnName === "Dues Pd. Dt.") {
-                            # this is a date field, and we have to work miracles to turn it into a mysql-compatible date
-                            $date = $cell->getValue();
-                            $dateint = intval($date);
-                            $dateintVal = (int) $dateint;
-                            $value = \PhpOffice\PhpSpreadsheet\Style\NumberFormat::toFormattedString($dateintVal, "YYYY-MM-DD");
-                        } elseif ($columnName === "BSA Verify Date") {
-                            # this is also a date field, but can be empty
-                            $date = $cell->getValue();
-                            if (!$date) {
-                                $value = get_option('oadueslookup_last_import');
-                            } else {
-                                $dateint = intval($date);
-                                $dateintVal = (int) $dateint;
-                                $value = \PhpOffice\PhpSpreadsheet\Style\NumberFormat::toFormattedString($dateintVal, "YYYY-MM-DD");
-                            }
-                        } else {
-                            $value = $cell->getValue();
-                        }
-                        if (isset($columnMap[$columnName])) {
-                            $rowData[$columnMap[$columnName]] = $value;
-                        }
-                    }
-                    if ($wpdb->insert($dbprefix . "dues_data", $rowData, array('%s','%s','%s','%s','%d','%d','%s','%s'))) {
-                        $recordcount++;
-                    }
-                }
-            }
-            $error_output = ob_get_clean();
-            if (!$error_output) {
-                ?><div class="updated"><p><strong>Import successful. Imported <?php esc_html_e($recordcount) ?> records.</strong></p></div><?php
-            } else {
-                ?><div class="error"><p><strong>Import partially successful. Imported <?php esc_html_e($recordcount) ?> of <?php esc_html_e($row->getRowIndex() - 2) ?> records.</strong></p>
-            <p>Errors follow:</p>
-                <?php echo $error_output ?>
-            </div><?php
-            }
-            update_option('oadueslookup_last_update', $wpdb->get_var("SELECT DATE_FORMAT(MAX(dues_paid_date), '%Y-%m-%d') FROM ${dbprefix}dues_data"));
-        } else {
-            ?><div class="error"><p><strong>Invalid file upload.</strong> Not an XLSX file.</p></div><?php
-        }
     }
 
     // ============================
@@ -172,11 +70,20 @@ function oadueslookup_import()
 <p>Export file from OALM Must contain at least the following columns:<br>
 BSA ID, Dues Yr., Dues Pd. Dt., Level, BSA Reg., BSA Reg. Overidden, BSA Verify Date, BSA Verify Status<br>
 Any additional columns will be ignored.</p>
-<p><a href="http://github.com/justdave/oadueslookup/wiki">How to create the export file in OALM</a></p>
-<form action="" method="post" enctype="multipart/form-data">
-<label for="oalm_file">Click Browse, then select the xlsx file exported from OALM's "Export Members", then click "Upload":</label><br>
-<input type="file" name="oalm_file" id="oalm_file" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
-<input type="submit" class="button button-primary" name="submit" value="Upload"><br>
+<p><a href="https://github.com/oabsa/dues-lookup/wiki/OALM-Export">How to create the export file in OALM</a></p>
+
+    <div class="oalm_upload_container">
+    <input type="file" accept=".xlsx" name="oalm_file" id="oalm_file">
+    <!-- Drag and Drop container-->
+    <div class="upload-area" id="uploadfile">
+    <div id="oalm_drop_text"><img alt="[waiting]" src="<?php echo site_url(); ?>/wp-includes/images/wpspin-2x.gif"><br>Checking status...</div>
+    <div id="oalm_drop_filename">Filename</div>
+    <div id="oalm_drop_status">Status</div>
+    <progress id="oalm_drop_progressBar" value="0" max="1000" style="width: 300px;"></progress>
+    <progress id="oalm_drop_processBar" value="0" max="1000" style="width: 300px;"></progress>
+    </div>
+    </div>
+<div id="oalm_import_output"></div>
 <p><strong>Last import:</strong> <?php
     $last_import = get_option('oadueslookup_last_import');
 if ($last_import == '1900-01-01') {
@@ -184,9 +91,75 @@ if ($last_import == '1900-01-01') {
 } else {
     esc_html_e($last_import);
 }
+?></p><p>If the process seems to have stalled, <a href="#" id="oalm_reset_button">click here</a> to abort processing and start over. <?php
+if (!get_option('oadueslookup_use_cron')) {
+    ?>If this happens frequently it probably means your data is too big to be processed within your server's execution timeout, and you should consider running the processing script from cron (see the Dues Lookup Settings page).<?php
+} else {
+    ?>You have cron enabled, so you will see "Waiting for cron job..." after your upload completes until the cron job triggers (see the bottom of the Dues Lookup Settings page).<?php
+}
 ?></p>
-</form>
     <?php
 
     echo "</div>";
 } // END OF SETTINGS SCREEN
+
+add_action( 'wp_ajax_oalm_process_import_upload', 'oalm_process_import_upload' );
+function oalm_process_import_upload() {
+    if (isset($_FILES['oalm_file'])) {
+        if (preg_match('/\.xlsx$/', $_FILES['oalm_file']['name'])) {
+            // process file upload here
+            $dir = wp_upload_dir()['basedir'] . "/dues-lookup/";
+            $moved = move_uploaded_file($_FILES['oalm_file']['tmp_name'], $dir . 'import.xlsx');
+            if ($moved) {
+                update_option('oadueslookup_import_status', [
+                    'status' => 'waiting',
+                    'progress' => '0',
+                    'output' => ''
+                ]);
+                wp_send_json(['status' => 'success']);
+            } else {
+                wp_send_json(['status' => 'error', 'errortext' => "Upload failed."]);
+            }
+        } else {
+            wp_send_json(['status' => 'error', 'errortext' => 'Wrong filetype was uploaded. Please use .xlsx']);
+        }
+    } else {
+        wp_send_json(['status' => 'error', 'errortext' => 'No file was uploaded?']);
+    }
+}
+
+add_action( 'wp_ajax_oalm_import_status', 'oalm_import_status' );
+function oalm_import_status() {
+    $dir = wp_upload_dir()['basedir'] . "/dues-lookup/";
+    if (!file_exists($dir . 'import.xlsx')) {
+        $status = [ 'status' => 'ready' ];
+    } else {
+        $status = get_option('oadueslookup_import_status');
+        if ($status['status'] == 'waiting') {
+            if (!get_option('oadueslookup_use_cron')) {
+                ignore_user_abort(true);
+                set_time_limit(0);
+                include(dirname(__FILE__)."/../bin/dues-import-processor.php");
+            }
+        }
+    }
+    wp_send_json($status);
+}
+
+/*
+ * The upload widget calls this to acknowledge that it has retrieved the
+ * output after the complete status has been received, effectively resetting
+ * for next time. No parameters, no output.
+ */
+add_action( 'wp_ajax_oalm_ack_complete', 'oalm_ack_complete' );
+function oalm_ack_complete() {
+    $dir = wp_upload_dir()['basedir'] . "/dues-lookup/";
+    if (file_exists($dir . 'import.xlsx')) {
+        unlink($dir . 'import.xlsx');
+    }
+    update_option('oadueslookup_import_status', [
+        'status' => 'waiting',
+        'progress' => '0',
+        'output' => ''
+    ]);
+}

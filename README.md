@@ -7,11 +7,11 @@
 ## Wordpress Compatibility
 
 *Requires at least:* 3.0.1
-*Tested up to:* 5.7.2
+*Tested up to:* 5.8.2
 
 ## PHP Compatibility
 
-*Requires at least:* 7.1.x
+*Requires at least:* 7.3.x
 *Tested up to:* 7.4.x
 
 *License:* GPLv2 or later
@@ -42,12 +42,20 @@ This plugin embeds the [PhpSpreadsheet library](https://github.com/PHPOffice/Php
 
 1. Place the unpacked "dues-lookup" directory in the "/wp-content/plugins/" directory.
 1. Activate the plugin through the "Plugins" menu in WordPress.
-1. Go to "OA Dues Lookup" under "Settings" to find the settings and to upload data.
+1. Go to "OA Tools" > "Dues Lookup Settings" to find the settings
+1. Go to "OA Tools" > "Import Dues" to upload data.
 1. Put the `[oadueslookup]` shortcode on the page you want the lookup form to appear on.
 
 **NOTE:** if you do a git check out from GitHub or download the source Zip file, you will need to run `composer install` inside the dues-lookup directory to install the dependencies before you can use it.
 
 ## Changelog
+
+### 2.2
+
+* Moved configuration and import to separate menu items within the new OA Tools top-level menu instead of in Settings. The OA Tools menu is designed to be portable so any OA-related WordPress plugins can make use of it.
+* The Dues Import screen now features a drag-n-drop upload widget, so you can drag your xlsx file out of a Finder/Explorer window onto it to upload (or just click to get a filepicker like you used to).
+* There is now a progress widget which will show you the upload progress and then the processing progress while the import file is processed. No more sitting there watching the loading indicator spin on your browser wondering how far along it is!
+* Now supports setting up a cron job to do the import processing in the background outside of the web server process. Since many web hosting providers have a 30 second execution limit for PHP, this may be necessary if your lodge's membership is large enough that the processing always gets killed off by the server before it finishes. See the bottom of the Dues Lookup Settings page for details.
 
 ### 2.1.3
 

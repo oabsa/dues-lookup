@@ -1,24 +1,11 @@
 # OA Dues Lookup
-
-*Contributors:* Dave Miller, Steven Hall, Eric Silva
-
-*Tags:* Order of the Arrow, BSA, OA, dues, Boy Scouts
-
-## Wordpress Compatibility
-
-*Requires at least:* 3.0.1
-*Tested up to:* 5.9
-
-## PHP Compatibility
-
-*Requires at least:* 7.3.x
-*Tested up to:* 7.4.x
-
-*License:* GPLv2 or later
-
-*License URI:* http://www.gnu.org/licenses/gpl-2.0.html
-
-Wordpress plugin to use in conjunction with OA LodgeMaster to allow members to look up when they last paid dues.
+Contributors: Dave Miller, Steven Hall, Eric Silva
+Tags: Order of the Arrow, BSA, OA, dues, Boy Scouts
+Requires at least: 5.2
+Tested up to: 5.9
+Requires PHP: 7.3
+License: GPLv2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 ## Description
 
@@ -46,5 +33,8 @@ What this plugin still does that LodgeMaster's Member Portal does not yet do:
 1. Go to "OA Tools" > "Import Dues" to upload data.
 1. Put the `[oadueslookup]` shortcode on the page you want the lookup form to appear on.
 
-**NOTE:** if you do a git check out from GitHub or download the source Zip file, you will need to run `composer install` inside the dues-lookup directory to install the dependencies before you can use it.
+**NOTE:** if you do a git check out from GitHub or download the source Zip
+file, you will need to run `composer install` inside the dues-lookup directory
+to install the dependencies before you can use it. Note also that if you do
+this, the automatic updates will fail unless you delete the .git directory.
 

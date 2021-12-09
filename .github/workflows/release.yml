@@ -18,6 +18,9 @@ jobs:
       with:
         type: 'zip'
         filename: "dues-lookup-${{ steps.lasttag.outputs.tag }}.zip"
+        exclusions: '*DOCKER_ENV *docker_tag *output.log *.git*'
+        directory: '..'
+        path: 'dues-lookup'
     - uses: ncipollo/release-action@v1
       with:
         allowUpdates: true
@@ -25,5 +28,5 @@ jobs:
         omitNameDuringUpdate: true
         omitPrereleaseDuringUpdate: true
         tag: ${{ steps.lasttag.outputs.tag }}
-        artifacts: "dues-lookup-${{ steps.lasttag.outputs.tag }}.zip"
+        artifacts: "../dues-lookup-${{ steps.lasttag.outputs.tag }}.zip"
         token: ${{ secrets.GITHUB_TOKEN }}

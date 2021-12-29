@@ -280,10 +280,10 @@ if (!function_exists('oa_tools_add_menu')) {
             }
         }
         if (!$menu_exists) {
-            add_menu_page( "OA Tools", "OA Tools", 'none', 'oa_tools', 'oadueslookup_tools_menu', 'data:image/svg+xml;base64,' . base64_encode($oa_tools_icon), 3 );
+            add_menu_page( "OA Tools", "OA Tools", 'none', 'oa_tools', 'oa_tools_menu', 'data:image/svg+xml;base64,' . base64_encode($oa_tools_icon), 3 );
         }
     }
-    function oadueslookup_tools_menu() {
+    function oa_tools_menu() {
         # this is a no-op, the page can be blank. It's going to go to the first
         # submenu anyway when it's picked.
     }

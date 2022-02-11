@@ -7,7 +7,7 @@
 ## Wordpress Compatibility
 
 *Requires at least:* 3.0.1
-*Tested up to:* 5.8.2
+*Tested up to:* 5.9
 
 ## PHP Compatibility
 
@@ -49,6 +49,10 @@ What this plugin still does that LodgeMaster's Member Portal does not yet do:
 **NOTE:** if you do a git check out from GitHub or download the source Zip file, you will need to run `composer install` inside the dues-lookup directory to install the dependencies before you can use it.
 
 ## Changelog
+
+### 2.3
+
+* Processing imported dues data is now done in a temporary table in the database, and only copied to the live lookup table after all of the data has been successfully processed. This way if someone tries to do a lookup while the data is still processing, it will actually work.
 
 ### 2.2
 

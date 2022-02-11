@@ -68,6 +68,7 @@ $complete = 0;
 $rowcount = $objWorksheet->getHighestRow();
 $recordcount = 0;
 $error_output = "";
+$oadueslookup_last_import = get_option('oadueslookup_last_import');
 foreach ($objWorksheet->getRowIterator() as $row) {
     $rowData = array();
     $import_status['progress'] = round(($row->getRowIndex()/$rowcount)*1000);
@@ -100,8 +101,9 @@ foreach ($objWorksheet->getRowIterator() as $row) {
             # we just validated that we have a good data file, nuke the existing data
             $wpdb->show_errors();
             ob_start();
-            $wpdb->query("TRUNCATE TABLE ${dbprefix}dues_data");
-            update_option('oadueslookup_last_import', $wpdb->get_var("SELECT DATE_FORMAT(NOW(), '%Y-%m-%d')"));
+            # Make an empty temporary table based on the dues_data table
+            $wpdb->query("CREATE TEMPORARY TABLE ${dbprefix}dues_data_temp (PRIMARY KEY (bsaid)) SELECT * FROM ${dbprefix}dues_data LIMIT 0");
+            $oadueslookup_last_import = $wpdb->get_var("SELECT DATE_FORMAT(NOW(), '%Y-%m-%d')");
             # re-insert the test data
             oadueslookup_insert_sample_data();
             # now we're ready for the incoming from the rest of the file.
@@ -122,7 +124,7 @@ foreach ($objWorksheet->getRowIterator() as $row) {
                 # this is also a date field, but can be empty
                 $date = $cell->getValue();
                 if (!$date) {
-                    $value = get_option('oadueslookup_last_import');
+                    $value = $oadueslookup_last_import;
                 } else {
                     $dateint = intval($date);
                     $dateintVal = (int) $dateint;
@@ -135,12 +137,28 @@ foreach ($objWorksheet->getRowIterator() as $row) {
                 $rowData[$columnMap[$columnName]] = $value;
             }
         }
-        if ($wpdb->insert($dbprefix . "dues_data", $rowData, array('%s','%s','%s','%s','%d','%d','%s','%s'))) {
+        if ($wpdb->insert($dbprefix . "dues_data_temp", $rowData, array('%s','%s','%s','%s','%d','%d','%s','%s'))) {
             $recordcount++;
         }
     }
 }
 $error_output = ob_get_clean();
+ob_start();
+
+# NOTE: If you want to make all errors fatal, set the following to true.
+# Note that this will also make it fail when there are duplicate BSA IDs
+# (which is why it's false by default).
+$treat_errors_as_fatal = false;
+
+if ((!$treat_errors_as_fatal) || (!$error_output)) {
+    # delete the contents of the live table and copy the contents of the temp table to it
+    $wpdb->query("TRUNCATE TABLE ${dbprefix}dues_data");
+    $wpdb->query("INSERT INTO ${dbprefix}dues_data SELECT * FROM ${dbprefix}dues_data_temp");
+}
+$error_output .= ob_get_clean();
+if ((!$treat_errors_as_fatal) || (!$error_output)) {
+    update_option('oadueslookup_last_import', $oadueslookup_last_import);
+}
 ob_start();
 if (!$error_output) {
     ?><div class="updated"><p><strong>Import successful. Imported <?php esc_html_e($recordcount) ?> records.</strong></p></div><?php

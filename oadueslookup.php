@@ -216,10 +216,13 @@ function oadueslookup_update_shortcodes()
 
 function oadueslookup_insert_sample_data()
 {
+    # NOTE: the dues_data_temp temporary table must be created first before
+    # calling this function!
+
     global $wpdb;
     $dbprefix = $wpdb->prefix . "oalm_";
 
-    $wpdb->query("INSERT INTO ${dbprefix}dues_data " .
+    $wpdb->query("INSERT INTO ${dbprefix}dues_data_temp " .
         "(bsaid,    max_dues_year, dues_paid_date, level,        bsa_reg,   bsa_reg_overridden, bsa_verify_date, bsa_verify_status) VALUES " .
         "('123453','2013',         '2012-11-15',   'Brotherhood','1',       '0',                '1900-01-01',   'BSA ID Not Found'), " .
         "('123454','2014',         '2013-12-28',   'Ordeal',     '1',       '0',                '1900-01-01',   'BSA ID Not Found'), " .
@@ -236,7 +239,12 @@ function oadueslookup_install_data()
     global $wpdb;
     $dbprefix = $wpdb->prefix . "oalm_";
 
+    # Make an empty temporary table based on the dues_data table
+    $wpdb->query("CREATE TEMPORARY TABLE ${dbprefix}dues_data_temp SELECT * FROM ${dbprefix}dues_data LIMIT 0");
+    # load some sample data into it
     oadueslookup_insert_sample_data();
+    # and copy the contents of the temporary table into the real one
+    $wpdb->query("INSERT INTO ${dbprefix}dues_data SELECT * FROM ${dbprefix}dues_data_temp");
 }
 
 # Let admin users know about version 2.1 shortcode migration

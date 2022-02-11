@@ -31,7 +31,7 @@ https://github.com/oabsa/dues-lookup/wiki
 
 This plugin embeds the [PhpSpreadsheet library](https://github.com/PHPOffice/PhpSpreadsheet) (and its dependencies) intact with no modifications, which is licensed separately under LGPL.
 
-NOTE: as of June 2021, LodgeMaster now offers a Member Portal in which members can see this on their profile. Depending on your desires, this plugin may no longer be needed.
+**NOTE: as of June 2021, LodgeMaster now offers a Member Portal in which members can see this on their profile. Depending on your desires, this plugin may no longer be needed.**
 
 What this plugin still does that LodgeMaster's Member Portal does not yet do:
 * Link to the site to pay your dues - [LodgeMaster Feature Request](https://oalodgemaster.featureupvote.com/suggestions/187770/add-pay-dues-link-to-existing-council-systems-in-member-portal)

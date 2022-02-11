@@ -24,7 +24,7 @@ NOTE: as of June 2021, LodgeMaster now offers a Member Portal in which members c
 
 What this plugin still does that LodgeMaster's Member Portal does not yet do:
 * Link to the site to pay your dues - [LodgeMaster Feature Request](https://oalodgemaster.featureupvote.com/suggestions/187770/add-pay-dues-link-to-existing-council-systems-in-member-portal)
-* Show the member whether their BSA Registration is valid
+* Show the member whether their BSA Registration is valid - [LodgeMaster Feature Request](https://oalodgemaster.featureupvote.com/suggestions/279184/add-bsa-registration-status-and-last-checked-date-to-profile-page-in-member-port)
 * Allow someone other than the member to look up their dues status if they know their BSA ID (like Scoutmasters) -- LodgeMaster integration with the Internet Advancement System is supposed to be coming in the next year or so, then they'll be able to do that there.
 
 ## Description

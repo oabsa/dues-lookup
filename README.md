@@ -20,13 +20,6 @@
 
 Wordpress plugin to use in conjunction with OA LodgeMaster to allow members to look up when they last paid dues.
 
-NOTE: as of June 2021, LodgeMaster now offers a Member Portal in which members can see this on their profile. Depending on your desires, this plugin may no longer be needed.
-
-What this plugin still does that LodgeMaster's Member Portal does not yet do:
-* Link to the site to pay your dues - [LodgeMaster Feature Request](https://oalodgemaster.featureupvote.com/suggestions/187770/add-pay-dues-link-to-existing-council-systems-in-member-portal)
-* Show the member whether their BSA Registration is valid - [LodgeMaster Feature Request](https://oalodgemaster.featureupvote.com/suggestions/279184/add-bsa-registration-status-and-last-checked-date-to-profile-page-in-member-port)
-* Allow someone other than the member to look up their dues status if they know their BSA ID (like Scoutmasters) -- LodgeMaster integration with the Internet Advancement System is supposed to be coming in the next year or so, then they'll be able to do that there.
-
 ## Description
 
 Provides a lookup form to allow OA members to enter their BSA Member ID and find out whether their dues are current.
@@ -37,6 +30,13 @@ See the Github page for detailed instructions and to file bug reports.
 https://github.com/oabsa/dues-lookup/wiki
 
 This plugin embeds the [PhpSpreadsheet library](https://github.com/PHPOffice/PhpSpreadsheet) (and its dependencies) intact with no modifications, which is licensed separately under LGPL.
+
+NOTE: as of June 2021, LodgeMaster now offers a Member Portal in which members can see this on their profile. Depending on your desires, this plugin may no longer be needed.
+
+What this plugin still does that LodgeMaster's Member Portal does not yet do:
+* Link to the site to pay your dues - [LodgeMaster Feature Request](https://oalodgemaster.featureupvote.com/suggestions/187770/add-pay-dues-link-to-existing-council-systems-in-member-portal)
+* Show the member whether their BSA Registration is valid - [LodgeMaster Feature Request](https://oalodgemaster.featureupvote.com/suggestions/279184/add-bsa-registration-status-and-last-checked-date-to-profile-page-in-member-port)
+* Allow someone other than the member to look up their dues status if they know their BSA ID (like Scoutmasters) -- LodgeMaster integration with the Internet Advancement System is supposed to be coming in the next year or so, then they'll be able to do that there.
 
 ## Installation
 

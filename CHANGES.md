@@ -1,5 +1,6 @@
 #### [unreleased]
 
+* PHP 8.2 compatibility fixes
 * Get the description and changelog working in the update/details dialogs. For whatever reason the remote file is only checked if it already exists locally, so the benefit from doing this will take 2 releases to show up. Once it does, the Description and Changes tabs in the plugin details popup will populate correctly.
 
 #### 2.3 / 2022-02-10

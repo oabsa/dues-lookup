@@ -102,7 +102,7 @@ foreach ($objWorksheet->getRowIterator() as $row) {
             $wpdb->show_errors();
             ob_start();
             # Make an empty temporary table based on the dues_data table
-            $wpdb->query("CREATE TEMPORARY TABLE ${dbprefix}dues_data_temp (PRIMARY KEY (bsaid)) SELECT * FROM ${dbprefix}dues_data LIMIT 0");
+            $wpdb->query("CREATE TEMPORARY TABLE {$dbprefix}dues_data_temp (PRIMARY KEY (bsaid)) SELECT * FROM {$dbprefix}dues_data LIMIT 0");
             $oadueslookup_last_import = $wpdb->get_var("SELECT DATE_FORMAT(NOW(), '%Y-%m-%d')");
             # re-insert the test data
             oadueslookup_insert_sample_data();
@@ -152,8 +152,8 @@ $treat_errors_as_fatal = false;
 
 if ((!$treat_errors_as_fatal) || (!$error_output)) {
     # delete the contents of the live table and copy the contents of the temp table to it
-    $wpdb->query("TRUNCATE TABLE ${dbprefix}dues_data");
-    $wpdb->query("INSERT INTO ${dbprefix}dues_data SELECT * FROM ${dbprefix}dues_data_temp");
+    $wpdb->query("TRUNCATE TABLE {$dbprefix}dues_data");
+    $wpdb->query("INSERT INTO {$dbprefix}dues_data SELECT * FROM {$dbprefix}dues_data_temp");
 }
 $error_output .= ob_get_clean();
 if ((!$treat_errors_as_fatal) || (!$error_output)) {
@@ -171,4 +171,4 @@ if (!$error_output) {
 $import_status['output'] = ob_get_clean();
 $import_status['status'] = 'completed';
 update_option('oadueslookup_import_status', $import_status);
-update_option('oadueslookup_last_update', $wpdb->get_var("SELECT DATE_FORMAT(MAX(dues_paid_date), '%Y-%m-%d') FROM ${dbprefix}dues_data"));
+update_option('oadueslookup_last_update', $wpdb->get_var("SELECT DATE_FORMAT(MAX(dues_paid_date), '%Y-%m-%d') FROM {$dbprefix}dues_data"));

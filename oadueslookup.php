@@ -92,7 +92,7 @@ function oadueslookup_install()
     // only if it doesn't exist yet. If the columns or indexes need to
     // change it'll need update code (see below).
 
-    $sql = "CREATE TABLE ${dbprefix}dues_data (
+    $sql = "CREATE TABLE {$dbprefix}dues_data (
   bsaid                 INT NOT NULL,
   max_dues_year         VARCHAR(4),
   dues_paid_date        DATE,
@@ -129,18 +129,18 @@ function oadueslookup_install()
 
     if ($installed_version < 2) {
         # Add a column for the Last Audit Date field
-        $wpdb->query("ALTER TABLE ${dbprefix}dues_data ADD COLUMN reg_audit_date DATE");
+        $wpdb->query("ALTER TABLE {$dbprefix}dues_data ADD COLUMN reg_audit_date DATE");
     }
 
     if ($installed_version < 3) {
         # Drop the old registration audit fields for OALM 4.1.2 or below.
-        $wpdb->query("ALTER TABLE ${dbprefix}dues_data DROP COLUMN reg_audit_date");
-        $wpdb->query("ALTER TABLE ${dbprefix}dues_data DROP COLUMN reg_audit_result");
+        $wpdb->query("ALTER TABLE {$dbprefix}dues_data DROP COLUMN reg_audit_date");
+        $wpdb->query("ALTER TABLE {$dbprefix}dues_data DROP COLUMN reg_audit_result");
         # Add the columns for the BSA registration fields in OALM 4.2.0 and above.
-        $wpdb->query("ALTER TABLE ${dbprefix}dues_data ADD COLUMN bsa_reg TINYINT(1)");
-        $wpdb->query("ALTER TABLE ${dbprefix}dues_data ADD COLUMN bsa_reg_overridden TINYINT(1)");
-        $wpdb->query("ALTER TABLE ${dbprefix}dues_data ADD COLUMN bsa_verify_date DATE");
-        $wpdb->query("ALTER TABLE ${dbprefix}dues_data ADD COLUMN bsa_verify_status VARCHAR(50)");
+        $wpdb->query("ALTER TABLE {$dbprefix}dues_data ADD COLUMN bsa_reg TINYINT(1)");
+        $wpdb->query("ALTER TABLE {$dbprefix}dues_data ADD COLUMN bsa_reg_overridden TINYINT(1)");
+        $wpdb->query("ALTER TABLE {$dbprefix}dues_data ADD COLUMN bsa_verify_date DATE");
+        $wpdb->query("ALTER TABLE {$dbprefix}dues_data ADD COLUMN bsa_verify_status VARCHAR(50)");
     }
 
     // insert next database revision update code immediately above this line.
@@ -222,7 +222,7 @@ function oadueslookup_insert_sample_data()
     global $wpdb;
     $dbprefix = $wpdb->prefix . "oalm_";
 
-    $wpdb->query("INSERT INTO ${dbprefix}dues_data_temp " .
+    $wpdb->query("INSERT INTO {$dbprefix}dues_data_temp " .
         "(bsaid,    max_dues_year, dues_paid_date, level,        bsa_reg,   bsa_reg_overridden, bsa_verify_date, bsa_verify_status) VALUES " .
         "('123453','2013',         '2012-11-15',   'Brotherhood','1',       '0',                '1900-01-01',   'BSA ID Not Found'), " .
         "('123454','2014',         '2013-12-28',   'Ordeal',     '1',       '0',                '1900-01-01',   'BSA ID Not Found'), " .
@@ -231,7 +231,7 @@ function oadueslookup_insert_sample_data()
         "('123457','2014',         '2013-12-18',   'Brotherhood','0',       '0',                '1900-01-01',   'BSA ID Found - Data Mismatch'), " .
         "('123458','2013',         '2013-03-15',   'Vigil',      '1',       '0',                '1900-01-01',   'BSA ID Not Found'), " .
         "('123459','2015',         '2014-03-15',   'Ordeal',     '0',       '0',                '1900-01-01',   'Never Run')");
-    $wpdb->query($wpdb->prepare("UPDATE ${dbprefix}dues_data SET bsa_verify_date=%s", get_option('oadueslookup_last_update')));
+    $wpdb->query($wpdb->prepare("UPDATE {$dbprefix}dues_data SET bsa_verify_date=%s", get_option('oadueslookup_last_update')));
 }
 
 function oadueslookup_install_data()
@@ -240,11 +240,11 @@ function oadueslookup_install_data()
     $dbprefix = $wpdb->prefix . "oalm_";
 
     # Make an empty temporary table based on the dues_data table
-    $wpdb->query("CREATE TEMPORARY TABLE ${dbprefix}dues_data_temp SELECT * FROM ${dbprefix}dues_data LIMIT 0");
+    $wpdb->query("CREATE TEMPORARY TABLE {$dbprefix}dues_data_temp SELECT * FROM {$dbprefix}dues_data LIMIT 0");
     # load some sample data into it
     oadueslookup_insert_sample_data();
     # and copy the contents of the temporary table into the real one
-    $wpdb->query("INSERT INTO ${dbprefix}dues_data SELECT * FROM ${dbprefix}dues_data_temp");
+    $wpdb->query("INSERT INTO {$dbprefix}dues_data SELECT * FROM {$dbprefix}dues_data_temp");
 }
 
 # Let admin users know about version 2.1 shortcode migration

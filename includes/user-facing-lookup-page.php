@@ -28,7 +28,7 @@ function oadueslookup_user_page($attr)
     if (isset($_POST['bsaid'])) {
         $bsaid = trim($_POST['bsaid']);
         if (preg_match('/^\d+$/', $bsaid)) {
-            $results = $wpdb->get_row($wpdb->prepare("SELECT max_dues_year, dues_paid_date, level, bsa_reg, bsa_reg_overridden, bsa_verify_date, bsa_verify_status FROM ${dbprefix}dues_data WHERE bsaid = %d", array($bsaid)));
+            $results = $wpdb->get_row($wpdb->prepare("SELECT max_dues_year, dues_paid_date, level, bsa_reg, bsa_reg_overridden, bsa_verify_date, bsa_verify_status FROM {$dbprefix}dues_data WHERE bsaid = %d", array($bsaid)));
             if (!isset($results)) {
                 ?>
 <div class="oalm_dues_bad"><p>Your BSA Member ID <?php echo htmlspecialchars($bsaid) ?> was not found.</p></div>

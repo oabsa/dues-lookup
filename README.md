@@ -11,8 +11,8 @@
 
 ## PHP Compatibility
 
-*Requires at least:* 7.3.x
-*Tested up to:* 7.4.x
+*Requires at least:* 8.0.x
+*Tested up to:* 8.2.x
 
 *License:* GPLv2 or later
 

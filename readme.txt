@@ -3,7 +3,7 @@ Contributors: Dave Miller, Steven Hall, Eric Silva
 Tags: Order of the Arrow, BSA, OA, dues, Boy Scouts
 Requires at least: 5.2
 Tested up to: 5.9
-Requires PHP: 7.3
+Requires PHP: 8.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 

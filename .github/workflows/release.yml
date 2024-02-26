@@ -12,6 +12,8 @@ jobs:
       with:
         php_version: 8.0
         php_extensions: gd zip
+        dev: no
+        args: --optimize-autoloader --apcu-autoloader
     - uses: WyriHaximus/github-action-get-previous-tag@v1
       id: lasttag
     - uses: thedoctor0/zip-release@master

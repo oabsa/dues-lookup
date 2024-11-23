@@ -1,4 +1,6 @@
-#### unreleased changes
+#### 2.5.1 / 2024-11-22
+
+* Security updates to embedded spreadsheet parser
 
 #### 2.5 / 2024-10-16
 

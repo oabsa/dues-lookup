@@ -99,7 +99,7 @@ if ($bsa_reg == "Registered") {
                             active registered member of a Scouting unit.</span><br><?php
 } else {
     switch ($bsa_verify_status) {
-        case "BSA ID Verified":
+        case "Member ID Verified":
             ?><span class="oalm_dues_bad">Your BSA registration has
                             expired, which means you are no longer listed as an active
                             registered member of any Scouting unit, and therefore cannot
@@ -115,7 +115,7 @@ if ($bsa_reg == "Registered") {
                             primary.<br><br>We last checked your status in the
                             BSA database on <?php esc_html_e($bsa_verify_date);
             break;
-        case "BSA ID Not Found":
+        case "Member ID Not Found":
             ?><span class="oalm_dues_bad">Our most recent audit
                             could not find you in the BSA database.</span><br>We
                             last attempted to find you on <?php
@@ -128,7 +128,7 @@ if ($bsa_reg == "Registered") {
                             unit counts, and it's not always clear which one is
                             primary.<?php
             break;
-        case "BSA ID Found - Data Mismatch":
+        case "Member ID Found - Data Mismatch":
             ?><span class="oalm_dues_bad">Your BSA registration exists
                             in the BSA database, but one or more other data points do
                             not match.</span><br><br>This means the information we have

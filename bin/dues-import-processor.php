@@ -55,14 +55,14 @@ $objReader->setLoadSheetsOnly(array("All"));
 $objSpreadsheet = $objReader->load($filename);
 $objWorksheet = $objSpreadsheet->getActiveSheet();
 $columnMap = array(
-'BSA ID'                => 'bsaid',
-'Dues Yr.'              => 'max_dues_year',
-'Dues Pd. Dt.'          => 'dues_paid_date',
-'Level'                 => 'level',
-'BSA Reg.'              => 'bsa_reg',
-'BSA Reg. Overidden'    => 'bsa_reg_overridden',
-'BSA Verify Date'       => 'bsa_verify_date',
-'BSA Verify Status'     => 'bsa_verify_status',
+'Member ID'               => 'bsaid',
+'Dues Yr.'                => 'max_dues_year',
+'Dues Pd. Dt.'            => 'dues_paid_date',
+'Level'                   => 'level',
+'Scouting Reg.'           => 'bsa_reg',
+'Scouting Reg. Overidden' => 'bsa_reg_overridden',
+'Scouting Verify Date'    => 'bsa_verify_date',
+'Scouting Verify Status'  => 'bsa_verify_status',
 );
 $complete = 0;
 $rowcount = $objWorksheet->getHighestRow();

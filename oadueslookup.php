@@ -224,12 +224,12 @@ function oadueslookup_insert_sample_data()
 
     $wpdb->query("INSERT INTO {$dbprefix}dues_data_temp " .
         "(bsaid,    max_dues_year, dues_paid_date, level,        bsa_reg,   bsa_reg_overridden, bsa_verify_date, bsa_verify_status) VALUES " .
-        "('123453','2013',         '2012-11-15',   'Brotherhood','1',       '0',                '1900-01-01',   'BSA ID Not Found'), " .
-        "('123454','2014',         '2013-12-28',   'Ordeal',     '1',       '0',                '1900-01-01',   'BSA ID Not Found'), " .
-        "('123455','2014',         '2013-12-28',   'Brotherhood','1',       '0',                '1900-01-01',   'BSA ID Verified'), " .
-        "('123456','2013',         '2013-07-15',   'Ordeal',     '1',       '0',                '1900-01-01',   'BSA ID Verified'), " .
-        "('123457','2014',         '2013-12-18',   'Brotherhood','0',       '0',                '1900-01-01',   'BSA ID Found - Data Mismatch'), " .
-        "('123458','2013',         '2013-03-15',   'Vigil',      '1',       '0',                '1900-01-01',   'BSA ID Not Found'), " .
+        "('123453','2013',         '2012-11-15',   'Brotherhood','1',       '0',                '1900-01-01',   'Member ID Not Found'), " .
+        "('123454','2014',         '2013-12-28',   'Ordeal',     '1',       '0',                '1900-01-01',   'Member ID Not Found'), " .
+        "('123455','2014',         '2013-12-28',   'Brotherhood','1',       '0',                '1900-01-01',   'Member ID Verified'), " .
+        "('123456','2013',         '2013-07-15',   'Ordeal',     '1',       '0',                '1900-01-01',   'Member ID Verified'), " .
+        "('123457','2014',         '2013-12-18',   'Brotherhood','0',       '0',                '1900-01-01',   'Member ID Found - Data Mismatch'), " .
+        "('123458','2013',         '2013-03-15',   'Vigil',      '1',       '0',                '1900-01-01',   'Member ID Not Found'), " .
         "('123459','2015',         '2014-03-15',   'Ordeal',     '0',       '0',                '1900-01-01',   'Never Run')");
     $wpdb->query($wpdb->prepare("UPDATE {$dbprefix}dues_data SET bsa_verify_date=%s", get_option('oadueslookup_last_update')));
 }

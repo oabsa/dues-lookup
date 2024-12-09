@@ -1,6 +1,9 @@
+#### unreleased changes
+
 #### 2.5.2 / 2024-12-09
 
 * Fix Dues Import to handle new column names from LodgeMaster (they renamed most instances of "BSA" to "Scouting" in the column names).
+* Updates to several embedded dependencies
 
 #### 2.5.1 / 2024-11-22
 

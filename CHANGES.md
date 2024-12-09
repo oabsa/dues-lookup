@@ -1,6 +1,6 @@
 #### unreleased changes
 
-* Full rebrand to the new Scouting American terminology.
+* Full rebrand to the new Scouting America terminology.
 * The included membership card sample is still the old one because the one I can download from MyScouting still says BSA on it. As soon as they update it, I'll update the sample graphic.
 
 #### 2.5.3 / 2024-12-09

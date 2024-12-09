@@ -1,3 +1,7 @@
+#### Unreleased changes
+
+* Fix Dues Import to handle new column names from LodgeMaster (they renamed most instances of "BSA" to "Scouting" in the column names).
+
 #### 2.5.1 / 2024-11-22
 
 * Security updates to embedded spreadsheet parser

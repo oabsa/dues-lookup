@@ -1,4 +1,6 @@
-#### unreleased changes
+#### 2.5.3 / 2024-12-09
+
+* Oops, the possible values in the Last Status column changed, too.
 
 #### 2.5.2 / 2024-12-09
 

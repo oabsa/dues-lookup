@@ -68,7 +68,7 @@ function oadueslookup_import()
 
 <h3 class="oalm">Import data from OALM</h3>
 <p>Export file from OALM Must contain at least the following columns:<br>
-BSA ID, Dues Yr., Dues Pd. Dt., Level, BSA Reg., BSA Reg. Overidden, BSA Verify Date, BSA Verify Status<br>
+Member ID, Dues Yr., Dues Pd. Dt., Level, Scouting Reg., Scouting Reg. Overidden, Scouting Verify Date, Scouting Verify Status<br>
 Any additional columns will be ignored.</p>
 <p><a href="https://github.com/oabsa/dues-lookup/wiki/OALM-Export">How to create the export file in OALM</a></p>
 

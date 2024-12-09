@@ -55,14 +55,14 @@ $objReader->setLoadSheetsOnly(array("All"));
 $objSpreadsheet = $objReader->load($filename);
 $objWorksheet = $objSpreadsheet->getActiveSheet();
 $columnMap = array(
-'Member ID'               => 'bsaid',
+'Member ID'               => 'memberid',
 'Dues Yr.'                => 'max_dues_year',
 'Dues Pd. Dt.'            => 'dues_paid_date',
 'Level'                   => 'level',
-'Scouting Reg.'           => 'bsa_reg',
-'Scouting Reg. Overidden' => 'bsa_reg_overridden',
-'Scouting Verify Date'    => 'bsa_verify_date',
-'Scouting Verify Status'  => 'bsa_verify_status',
+'Scouting Reg.'           => 'scouting_reg',
+'Scouting Reg. Overidden' => 'scouting_reg_overridden',
+'Scouting Verify Date'    => 'scouting_verify_date',
+'Scouting Verify Status'  => 'scouting_verify_status',
 );
 $complete = 0;
 $rowcount = $objWorksheet->getHighestRow();
@@ -102,7 +102,7 @@ foreach ($objWorksheet->getRowIterator() as $row) {
             $wpdb->show_errors();
             ob_start();
             # Make an empty temporary table based on the dues_data table
-            $wpdb->query("CREATE TEMPORARY TABLE {$dbprefix}dues_data_temp (PRIMARY KEY (bsaid)) SELECT * FROM {$dbprefix}dues_data LIMIT 0");
+            $wpdb->query("CREATE TEMPORARY TABLE {$dbprefix}dues_data_temp (PRIMARY KEY (memberid)) SELECT * FROM {$dbprefix}dues_data LIMIT 0");
             $oadueslookup_last_import = $wpdb->get_var("SELECT DATE_FORMAT(NOW(), '%Y-%m-%d')");
             # re-insert the test data
             oadueslookup_insert_sample_data();
@@ -120,7 +120,7 @@ foreach ($objWorksheet->getRowIterator() as $row) {
                 $dateint = intval($date);
                 $dateintVal = (int) $dateint;
                 $value = \PhpOffice\PhpSpreadsheet\Style\NumberFormat::toFormattedString($dateintVal, "YYYY-MM-DD");
-            } elseif ($columnName === "BSA Verify Date") {
+            } elseif ($columnName === "Scouting Verify Date") {
                 # this is also a date field, but can be empty
                 $date = $cell->getValue();
                 if (!$date) {
@@ -146,7 +146,7 @@ $error_output = ob_get_clean();
 ob_start();
 
 # NOTE: If you want to make all errors fatal, set the following to true.
-# Note that this will also make it fail when there are duplicate BSA IDs
+# Note that this will also make it fail when there are duplicate Member IDs
 # (which is why it's false by default).
 $treat_errors_as_fatal = false;
 

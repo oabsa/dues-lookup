@@ -47,7 +47,7 @@ function oadueslookup_enqueue_css()
 }
 
 global $oadueslookup_db_version;
-$oadueslookup_db_version = 3;
+$oadueslookup_db_version = 4;
 
 function oadueslookup_create_table($ddl)
 {
@@ -93,15 +93,15 @@ function oadueslookup_install()
     // change it'll need update code (see below).
 
     $sql = "CREATE TABLE {$dbprefix}dues_data (
-  bsaid                 INT NOT NULL,
-  max_dues_year         VARCHAR(4),
-  dues_paid_date        DATE,
-  level                 VARCHAR(12),
-  bsa_reg               TINYINT(1),
-  bsa_reg_overridden    TINYINT(1),
-  bsa_verify_date       DATE,
-  bsa_verify_status     VARCHAR(50),
-  PRIMARY KEY (bsaid)
+  memberid                 INT NOT NULL,
+  max_dues_year            VARCHAR(4),
+  dues_paid_date           DATE,
+  level                    VARCHAR(12),
+  scouting_reg             TINYINT(1),
+  scouting_reg_overridden  TINYINT(1),
+  scouting_verify_date     DATE,
+  scouting_verify_status   VARCHAR(50),
+  PRIMARY KEY (memberid)
 );";
     oadueslookup_create_table($sql);
 
@@ -141,6 +141,16 @@ function oadueslookup_install()
         $wpdb->query("ALTER TABLE {$dbprefix}dues_data ADD COLUMN bsa_reg_overridden TINYINT(1)");
         $wpdb->query("ALTER TABLE {$dbprefix}dues_data ADD COLUMN bsa_verify_date DATE");
         $wpdb->query("ALTER TABLE {$dbprefix}dues_data ADD COLUMN bsa_verify_status VARCHAR(50)");
+    }
+
+    if ($installed_version < 4) {
+        # BSA became Scouting America, so change the column names appropriately
+        $wpdb->query("ALTER TABLE `{$dbprefix}dues_data` " .
+            "CHANGE COLUMN `bsaid` `memberid` INT NOT NULL , " .
+            "CHANGE COLUMN `bsa_reg` `scouting_reg` TINYINT(1) NULL DEFAULT NULL , " .
+            "CHANGE COLUMN `bsa_reg_overridden` `scouting_reg_overridden` TINYINT(1) NULL DEFAULT NULL , " .
+            "CHANGE COLUMN `bsa_verify_date` `scouting_verify_date` DATE NULL DEFAULT NULL , " .
+            "CHANGE COLUMN `bsa_verify_status` `scouting_verify_status` VARCHAR(50) NULL DEFAULT NULL");
     }
 
     // insert next database revision update code immediately above this line.
@@ -223,7 +233,7 @@ function oadueslookup_insert_sample_data()
     $dbprefix = $wpdb->prefix . "oalm_";
 
     $wpdb->query("INSERT INTO {$dbprefix}dues_data_temp " .
-        "(bsaid,    max_dues_year, dues_paid_date, level,        bsa_reg,   bsa_reg_overridden, bsa_verify_date, bsa_verify_status) VALUES " .
+        "(memberid,    max_dues_year, dues_paid_date, level,        scouting_reg,   scouting_reg_overridden, scouting_verify_date, scouting_verify_status) VALUES " .
         "('123453','2013',         '2012-11-15',   'Brotherhood','1',       '0',                '1900-01-01',   'Member ID Not Found'), " .
         "('123454','2014',         '2013-12-28',   'Ordeal',     '1',       '0',                '1900-01-01',   'Member ID Not Found'), " .
         "('123455','2014',         '2013-12-28',   'Brotherhood','1',       '0',                '1900-01-01',   'Member ID Verified'), " .
@@ -231,7 +241,7 @@ function oadueslookup_insert_sample_data()
         "('123457','2014',         '2013-12-18',   'Brotherhood','0',       '0',                '1900-01-01',   'Member ID Found - Data Mismatch'), " .
         "('123458','2013',         '2013-03-15',   'Vigil',      '1',       '0',                '1900-01-01',   'Member ID Not Found'), " .
         "('123459','2015',         '2014-03-15',   'Ordeal',     '0',       '0',                '1900-01-01',   'Never Run')");
-    $wpdb->query($wpdb->prepare("UPDATE {$dbprefix}dues_data SET bsa_verify_date=%s", get_option('oadueslookup_last_update')));
+    $wpdb->query($wpdb->prepare("UPDATE {$dbprefix}dues_data SET scouting_verify_date=%s", get_option('oadueslookup_last_update')));
 }
 
 function oadueslookup_install_data()
